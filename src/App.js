@@ -22,6 +22,9 @@ function App() {
   const [searchStartDate, setSearchStartDate] = useState("");
   const [searchEndDate, setSearchEndDate] = useState("");
 
+ // ソート用 state
+  const [sortConfig, setSortConfig] = useState({ key: "date", direction: "asc" });
+
   // 追加処理
   const addEvent = (newEvent) => {
     setEvents([...events, newEvent]);
@@ -91,6 +94,33 @@ function App() {
   };
 
 
+  // ソート処理
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
+    const { key, direction } = sortConfig;
+    let comparison = 0;
+
+    if (a[key] < b[key]) {
+      comparison = -1;
+    } else if (a[key] > b[key]) {
+      comparison = 1;
+    }
+
+    return direction === "asc" ? comparison : -comparison;
+  });
+
+  // ソート切替関数
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        // 同じ列なら昇順⇔降順を切り替え
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      } else {
+        // 別の列を選んだ場合は昇順でスタート
+        return { key, direction: "asc" };
+      }
+    });
+  };
+
   return (
     <div>
       <h1>地域コミュニティイベント管理アプリ</h1>
@@ -150,7 +180,13 @@ function App() {
       </button>
 
       {/* イベント一覧 */}
-      <EventList events={filteredEvents} onDelete={deleteEvent} onEdit={editEvent} />
+      <EventList
+        events={sortedEvents}
+        onDelete={deleteEvent}
+        onEdit={editEvent}
+        onSort={handleSort}
+        sortConfig={sortConfig}
+      />
 
       {/* モーダル */}
       {isModalOpen && (
