@@ -1,34 +1,52 @@
 // src/components/EventForm.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-function EventForm({ onAddEvent }) {
+function EventForm({ onAddEvent, onSaveEdit, editingEvent, onCancel }) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [location, setLocation] = useState("");
+
+  // 編集対象がある場合は初期値をセット、ない場合はリセット
+  useEffect(() => {
+    if (editingEvent) {
+      setTitle(editingEvent.title);
+      setDate(editingEvent.date);
+      setLocation(editingEvent.location);
+    } else {
+      setTitle("");
+      setDate("");
+      setLocation("");
+    }
+  }, [editingEvent]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title || !date || !location) return;
 
-    // 新しいイベントオブジェクトを作成
-    const newEvent = {
-      id: Date.now(),
-      title,
-      date,
-      location,
-    };
-
-    onAddEvent(newEvent);
-
-    // フォームをリセット
-    setTitle("");
-    setDate("");
-    setLocation("");
+    if (editingEvent) {
+      // 編集モード
+      const updatedEvent = {
+        ...editingEvent,
+        title,
+        date,
+        location,
+      };
+      onSaveEdit(updatedEvent);
+    } else {
+      // 追加モード
+      const newEvent = {
+        id: Date.now(),
+        title,
+        date,
+        location,
+      };
+      onAddEvent(newEvent);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>イベント追加</h2>
+      <h2>{editingEvent ? "イベント編集" : "イベント追加"}</h2>
       <div>
         <input
           type="text"
@@ -52,7 +70,8 @@ function EventForm({ onAddEvent }) {
           onChange={(e) => setLocation(e.target.value)}
         />
       </div>
-      <button type="submit">追加</button>
+      <button type="submit">{editingEvent ? "保存" : "追加"}</button>
+      <button type="button" onClick={onCancel}>キャンセル</button>
     </form>
   );
 }

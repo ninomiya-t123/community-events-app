@@ -33,3 +33,4 @@ function EventList({ events, onDelete, onEdit }) {
 }
 
 export default EventList;
+
