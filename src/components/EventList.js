@@ -1,24 +1,33 @@
 // src/components/EventList.js
 import React from "react";
 
-function EventList() {
-  // ダミーデータ
-  const events = [
-    { id: 1, title: "夏祭り", date: "2025-08-01", location: "中央公園" },
-    { id: 2, title: "防災訓練", date: "2025-09-15", location: "市民会館" },
-    { id: 3, title: "子ども工作教室", date: "2025-10-05", location: "図書館" },
-  ];
-
+function EventList({ events, onDelete, onEdit }) {
   return (
     <div>
       <h2>イベント一覧</h2>
-      <ul>
-        {events.map((event) => (
-          <li key={event.id}>
-            <strong>{event.title}</strong> - {event.date} @ {event.location}
-          </li>
-        ))}
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th>イベント名</th>
+            <th>日付</th>
+            <th>場所</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {events.map((event) => (
+            <tr key={event.id}>
+              <td>{event.title}</td>
+              <td>{event.date}</td>
+              <td>{event.location}</td>
+              <td>
+                <button onClick={() => onEdit(event.id)}>編集</button>
+                <button onClick={() => onDelete(event.id)}>削除</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
