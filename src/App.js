@@ -5,14 +5,39 @@ import EventForm from "./components/EventForm";
 import Modal from "./components/Modal";
 
 function App() {
+
   const [events, setEvents] = useState([
-    { id: 1, title: "夏祭り", date: "2025-08-01", location: "中央公園" },
-    { id: 2, title: "防災訓練", date: "2025-09-15", location: "市民会館" },
-    { id: 3, title: "子ども工作教室", date: "2025-10-05", location: "図書館" },
+    {
+      id: 1,
+      title: "夏祭り",
+      date: "2025-08-01",
+      location: "中央公園",
+      description: "地域の伝統行事として毎年開催される夏祭りです。",
+      url: "https://example.com/matsuri"
+    },
+    {
+      id: 2,
+      title: "防災訓練",
+      date: "2025-09-15",
+      location: "市民会館",
+      description: "地域住民向け防災訓練。避難経路や救急対応を学びます。",
+      url: ""
+    },
+    {
+      id: 3,
+      title: "子ども工作教室",
+      date: "2025-10-05",
+      location: "図書館",
+      description: "親子で楽しめる工作体験イベントです。",
+      url: "https://example.com/kousaku"
+    }
   ]);
 
   const [editingEvent, setEditingEvent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // 詳細表示用
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   // 検索用 state
   const [searchInput, setSearchInput] = useState("");
@@ -121,6 +146,11 @@ function App() {
     });
   };
 
+  // 詳細を閉じる
+  const closeDetail = () => {
+    setSelectedEvent(null);
+  };
+
   return (
     <div>
       <h1>地域コミュニティイベント管理アプリ</h1>
@@ -186,9 +216,10 @@ function App() {
         onEdit={editEvent}
         onSort={handleSort}
         sortConfig={sortConfig}
+        onSelect={setSelectedEvent}
       />
 
-      {/* モーダル */}
+      {/* 追加・編集モーダル */}
       {isModalOpen && (
         <Modal onClose={cancelEdit}>
           <EventForm
@@ -199,6 +230,37 @@ function App() {
           />
         </Modal>
       )}
+
+      {/* 詳細モーダル */}
+      {selectedEvent && (
+        <Modal onClose={closeDetail}>
+          <h2>{selectedEvent.title}</h2>
+          <p>
+            <strong>日付:</strong> {selectedEvent.date}
+          </p>
+          <p>
+            <strong>場所:</strong> {selectedEvent.location}
+          </p>
+          {selectedEvent.description && (
+            <p>
+              <strong>詳細:</strong> {selectedEvent.description}
+            </p>
+          )}
+          {selectedEvent.url && (
+            <p>
+              <a
+                href={selectedEvent.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                イベントページを見る
+              </a>
+            </p>
+          )}
+          <button onClick={closeDetail}>閉じる</button>
+        </Modal>
+      )}
+
     </div>
   );
 }
