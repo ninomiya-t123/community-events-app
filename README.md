@@ -1,70 +1,64 @@
-# Getting Started with Create React App
+# 地域コミュニティイベント管理アプリ
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 📌 プロジェクト概要
+本アプリは、地域住民が気軽に地域イベント情報を閲覧・共有できることを目的としています。  
+都市部での人口集中やライフスタイルの多様化により地域のつながりが希薄化している中、  
+イベントを通じて交流を促進し、地域活性化を目指します。  
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🛠 使用技術
+- **React 18**
+- **React Router DOM**
+- **JavaScript (ES6+)**
+- **CSS (またはTailwind/MUIなど利用した場合は追記)**
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 🚀 セットアップ手順
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```bash
+# リポジトリをクローン
+git clone https://github.com/ninomiya-t123/community-events-app.git
+cd community-events-app
 
-### `npm test`
+# パッケージをインストール
+npm install
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# 開発サーバーを起動
+npm start
 
-### `npm run build`
+```
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## ✨ 実装機能
+- **イベント一覧表示（タイトル・日付・場所）**
+- **イベント詳細ページ（一覧から遷移）**
+- **イベント追加フォーム（タイトル・日付・場所を入力して追加）**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 📲 動作イメージ
+スクリーンショットを添付予定
+- **イベント一覧画面**
+- **イベント詳細画面**
+- **イベント追加フォーム**
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## ✅ 動作確認方法
+1. 上記セットアップ手順を実施
+2. http://localhost:3000 にアクセス
+3. 以下を確認
+- **イベント一覧が表示される**
+- **イベントをクリックすると詳細ページが開く**
+- **「イベント追加」から新しいイベントを追加できる**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 🙌 今後の拡張アイデア
+- **ユーザー認証（ログイン／会員登録）**
+- **データベース接続によるイベント永続化**
+- **イベント検索・カテゴリ分け機能**
+- **参加ボタンやコメント機能**
+- **スマホ対応のUI改善**
