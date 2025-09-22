@@ -1,5 +1,6 @@
 // src/App.js
 import React, { useState } from "react";
+import Login from "./components/Login";
 import EventList from "./components/EventList";
 import EventForm from "./components/EventForm";
 import Modal from "./components/Modal";
@@ -7,6 +8,10 @@ import PendingEventList from "./components/PendingEventList";
 
 function App() {
 
+  // ログイン画面用 state
+  const [userRole, setUserRole] = useState(null); // "admin", "user", "guest"
+
+ // イベント一覧用 state
   const [events, setEvents] = useState([
     {
       id: 1,
@@ -64,6 +69,22 @@ function App() {
     applicantEmail: "taro@example.com"
   }
 ]);
+
+  // ログイン画面
+  const handleLogin = (username, password) => {
+    if (username === "admin" && password === "admin") {
+      setUserRole("admin");
+    } else {
+      setUserRole("user");
+    }
+  };
+  const handleGuest = () => {
+    setUserRole("guest");
+  };
+  if (!userRole) {
+    // ログインしていない状態のときは Login コンポーネントを表示
+    return <Login onLogin={handleLogin} onGuest={handleGuest} />;
+  }
 
   // 追加処理
   const addEvent = (newEvent) => {
@@ -196,6 +217,8 @@ function App() {
 
   return (
     <div>
+      <h2>ログイン成功: {userRole} としてログイン中</h2>
+
       <h1>地域コミュニティイベント管理アプリ</h1>
 
       {/* 検索フォーム */}
