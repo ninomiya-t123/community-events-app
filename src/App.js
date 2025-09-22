@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import EventList from "./components/EventList";
 import EventForm from "./components/EventForm";
 import Modal from "./components/Modal";
+import PendingEventList from "./components/PendingEventList";
 
 function App() {
 
@@ -50,6 +51,20 @@ function App() {
  // ソート用 state
   const [sortConfig, setSortConfig] = useState({ key: "date", direction: "asc" });
 
+ // 承認待ちイベント用 state
+  const [pendingEvents, setPendingEvents] = useState([
+  { 
+    id: 101,
+    title: "ヨガ教室",
+    date: "2025-11-01",
+    location: "公民館",
+    description: "初心者向けヨガクラスを提案します！",
+    url: "",
+    applicantName: "山田太郎",
+    applicantEmail: "taro@example.com"
+  }
+]);
+
   // 追加処理
   const addEvent = (newEvent) => {
     setEvents([...events, newEvent]);
@@ -87,8 +102,9 @@ function App() {
 
   // フィルタ処理（AND条件＋日付範囲）
   const filteredEvents = events.filter((event) => {
-    const matchText =
-      event.title.includes(searchTerm) || event.location.includes(searchTerm);
+  const matchText =
+    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.location.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchStart = searchStartDate
       ? event.date >= searchStartDate
@@ -150,6 +166,33 @@ function App() {
   const closeDetail = () => {
     setSelectedEvent(null);
   };
+
+  // 承認処理
+  const approveEvent = (id) => {
+    const eventToApprove = pendingEvents.find((e) => e.id === id);
+    if (!eventToApprove) return;
+    setPendingEvents(pendingEvents.filter((e) => e.id !== id));
+    setEvents([...events, eventToApprove]);
+  };
+
+  // 却下処理
+  const rejectEvent = (id) => {
+    setPendingEvents(pendingEvents.filter((e) => e.id !== id));
+  };
+
+  // ソート処理（承認待ち用）
+  const sortedPendingEvents = [...pendingEvents].sort((a, b) => {
+    const { key, direction } = sortConfig;
+    let comparison = 0;
+
+    if (a[key] < b[key]) {
+      comparison = -1;
+    } else if (a[key] > b[key]) {
+      comparison = 1;
+    }
+
+    return direction === "asc" ? comparison : -comparison;
+  });
 
   return (
     <div>
@@ -257,9 +300,28 @@ function App() {
               </a>
             </p>
           )}
-          <button onClick={closeDetail}>閉じる</button>
+          {selectedEvent.applicantName && (
+            <p>
+              <strong>申請者:</strong> {selectedEvent.applicantName}
+            </p>
+          )}
+          {selectedEvent.applicantEmail && (
+            <p>
+              <strong>申請者メール:</strong> {selectedEvent.applicantEmail}
+            </p>
+          )}
         </Modal>
       )}
+
+      {/* 承認待ちイベント一覧 */}
+      <PendingEventList
+        pendingEvents={sortedPendingEvents}
+        approveEvent={approveEvent}
+        rejectEvent={rejectEvent}
+        onSort={handleSort}
+        sortConfig={sortConfig}
+        onSelect={setSelectedEvent}
+      />
 
     </div>
   );

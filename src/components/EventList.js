@@ -54,6 +54,7 @@ function EventList({ events, onDelete, onEdit, onSort, sortConfig, onSelect }) {
           ))}
         </tbody>
       </table>
+
     </div>
   );
 }
