@@ -1,7 +1,7 @@
 // src/components/EventList.js
 import React from "react";
 
-function EventList({ events, onDelete, onEdit, onSort, sortConfig, onSelect }) {
+function EventList({ events, onDelete, onEdit, onSort, sortConfig, onSelect, userRole }) {
   const getSortIndicator = (key) => {
     if (sortConfig.key !== key) return "";
     return sortConfig.direction === "asc" ? " ▲" : " ▼";
@@ -26,8 +26,9 @@ function EventList({ events, onDelete, onEdit, onSort, sortConfig, onSelect }) {
             <th onClick={() => onSort("location")} style={{ cursor: "pointer" }}>
               場所{getSortIndicator("location")}
             </th>
-            <th>操作</th>
-          </tr>
+	    {/* admin のときだけ「操作」列を表示 */}
+            {userRole === "admin" && <th>操作</th>}
+	  </tr>
         </thead>
         <tbody>
           {events.map((event) => (
@@ -46,10 +47,13 @@ function EventList({ events, onDelete, onEdit, onSort, sortConfig, onSelect }) {
               </td>
               <td>{event.date}</td>
               <td>{event.location}</td>
-              <td>
-                <button onClick={() => onEdit(event.id)}>編集</button>
-                <button onClick={() => onDelete(event.id)}>削除</button>
-              </td>
+              {/* admin のときだけ「編集・削除ボタン」を表示 */}
+              {userRole === "admin" && (
+                <td>
+                  <button onClick={() => onEdit(event.id)}>編集</button>
+                  <button onClick={() => onDelete(event.id)}>削除</button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

@@ -10,8 +10,9 @@ function App() {
 
   // ログイン画面用 state
   const [userRole, setUserRole] = useState(null); // "admin", "user", "guest"
+  const [username, setUsername] = useState("");
 
- // イベント一覧用 state
+  // イベント一覧用 state
   const [events, setEvents] = useState([
     {
       id: 1,
@@ -70,19 +71,20 @@ function App() {
   }
 ]);
 
-  // ログイン画面
+  // ログイン画面処理
   const handleLogin = (username, password) => {
     if (username === "admin" && password === "admin") {
       setUserRole("admin");
     } else {
       setUserRole("user");
+      setUsername(username);
     }
   };
   const handleGuest = () => {
     setUserRole("guest");
   };
   if (!userRole) {
-    // ログインしていない状態のときは Login コンポーネントを表示
+    // 初期状態のときは Login コンポーネントを表示
     return <Login onLogin={handleLogin} onGuest={handleGuest} />;
   }
 
@@ -215,139 +217,346 @@ function App() {
     return direction === "asc" ? comparison : -comparison;
   });
 
-  return (
-    <div>
-      <h2>ログイン成功: {userRole} としてログイン中</h2>
+  // ここからUserRoleによって表示画面を変更(1～3)
+  if (userRole === "admin") {   // 1. admin 用の画面
+      return (
+      <div>
+        <h3>ログイン成功: {userRole} としてログイン中</h3>
 
-      <h1>地域コミュニティイベント管理アプリ</h1>
-
-      {/* 検索フォーム */}
-      <form onSubmit={handleSearchSubmit} style={{ marginBottom: "10px" }}>
-        {/* 名前・場所検索 */}
-        <div>
-          <input
-            type="text"
-            placeholder="イベント名や場所で検索"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            style={{ padding: "5px", width: "200px", marginRight: "5px" }}
-          />
-        </div>
-
-        {/* 日付範囲検索 */}
-        <div style={{ marginTop: "5px" }}>
-          <label>
-            開始日:{" "}
+        {/* 検索フォーム */}
+        <form onSubmit={handleSearchSubmit} style={{ marginBottom: "10px" }}>
+          {/* 名前・場所検索 */}
+          <div>
             <input
-              type="date"
-              value={searchStartDateInput}
-              onChange={(e) => setSearchStartDateInput(e.target.value)}
-              style={{ padding: "5px", marginRight: "10px" }}
+              type="text"
+              placeholder="イベント名や場所で検索"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              style={{ padding: "5px", width: "200px", marginRight: "5px" }}
             />
-          </label>
-          <label>
-            終了日:{" "}
+          </div>
+
+          {/* 日付範囲検索 */}
+          <div style={{ marginTop: "5px" }}>
+            <label>
+              開始日:{" "}
+              <input
+                type="date"
+                value={searchStartDateInput}
+                onChange={(e) => setSearchStartDateInput(e.target.value)}
+                style={{ padding: "5px", marginRight: "10px" }}
+              />
+            </label>
+            <label>
+              終了日:{" "}
+              <input
+                type="date"
+                value={searchEndDateInput}
+                onChange={(e) => setSearchEndDateInput(e.target.value)}
+                style={{ padding: "5px" }}
+              />
+            </label>
+          </div>
+
+          {/* 検索・リセットボタン */}
+          <div style={{ marginTop: "5px" }}>
+            <button type="submit">検索</button>
+            <button type="button" onClick={handleReset} style={{ marginLeft: "5px" }}>
+              リセット
+            </button>
+          </div>
+        </form>
+
+        {/* 追加ボタン */}
+        <button
+          onClick={() => {
+            setEditingEvent(null);
+            setIsModalOpen(true);
+          }}
+        >
+          ＋ イベント追加
+        </button>
+
+        {/* イベント一覧 */}
+        <EventList
+          events={sortedEvents}
+          onDelete={deleteEvent}
+          onEdit={editEvent}
+          onSort={handleSort}
+          sortConfig={sortConfig}
+          onSelect={setSelectedEvent}
+          userRole={userRole}
+        />
+
+        {/* 追加・編集モーダル */}
+        {isModalOpen && (
+          <Modal onClose={cancelEdit}>
+            <EventForm
+              onAddEvent={addEvent}
+              onSaveEdit={saveEvent}
+              editingEvent={editingEvent}
+              onCancel={cancelEdit}
+            />
+          </Modal>
+        )}
+
+        {/* 詳細モーダル */}
+        {selectedEvent && (
+          <Modal onClose={closeDetail}>
+            <h2>{selectedEvent.title}</h2>
+            <p>
+              <strong>日付:</strong> {selectedEvent.date}
+            </p>
+            <p>
+              <strong>場所:</strong> {selectedEvent.location}
+            </p>
+            {selectedEvent.description && (
+              <p>
+                <strong>詳細:</strong> {selectedEvent.description}
+              </p>
+            )}
+            {selectedEvent.url && (
+              <p>
+                <a
+                  href={selectedEvent.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  イベントページを見る
+                </a>
+              </p>
+            )}
+            {selectedEvent.applicantName && (
+              <p>
+                <strong>申請者:</strong> {selectedEvent.applicantName}
+              </p>
+            )}
+            {selectedEvent.applicantEmail && (
+              <p>
+                <strong>申請者メール:</strong> {selectedEvent.applicantEmail}
+              </p>
+            )}
+          </Modal>
+        )}
+
+        {/* 承認待ちイベント一覧 */}
+        <PendingEventList
+          pendingEvents={sortedPendingEvents}
+          approveEvent={approveEvent}
+          rejectEvent={rejectEvent}
+          onSort={handleSort}
+          sortConfig={sortConfig}
+          onSelect={setSelectedEvent}
+          userRole={userRole}
+        />
+
+      </div>
+    );
+
+  } else if (userRole === "user") {   // 2. user 用の画面
+      return (
+      <div>
+        <h3>ログイン成功: {username} としてログイン中</h3>
+
+
+        {/* 検索フォーム */}
+        <form onSubmit={handleSearchSubmit} style={{ marginBottom: "10px" }}>
+          {/* 名前・場所検索 */}
+          <div>
             <input
-              type="date"
-              value={searchEndDateInput}
-              onChange={(e) => setSearchEndDateInput(e.target.value)}
-              style={{ padding: "5px" }}
+              type="text"
+              placeholder="イベント名や場所で検索"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              style={{ padding: "5px", width: "200px", marginRight: "5px" }}
             />
-          </label>
-        </div>
+          </div>
 
-        {/* ボタン */}
-        <div style={{ marginTop: "5px" }}>
-          <button type="submit">検索</button>
-          <button type="button" onClick={handleReset} style={{ marginLeft: "5px" }}>
-            リセット
-          </button>
-        </div>
-      </form>
+          {/* 日付範囲検索 */}
+          <div style={{ marginTop: "5px" }}>
+            <label>
+              開始日:{" "}
+              <input
+                type="date"
+                value={searchStartDateInput}
+                onChange={(e) => setSearchStartDateInput(e.target.value)}
+                style={{ padding: "5px", marginRight: "10px" }}
+              />
+            </label>
+            <label>
+              終了日:{" "}
+              <input
+                type="date"
+                value={searchEndDateInput}
+                onChange={(e) => setSearchEndDateInput(e.target.value)}
+                style={{ padding: "5px" }}
+              />
+            </label>
+          </div>
 
-      {/* 追加ボタン */}
-      <button
-        onClick={() => {
-          setEditingEvent(null);
-          setIsModalOpen(true);
-        }}
-      >
-        ＋ イベント追加
-      </button>
+          {/* 検索・リセットボタン */}
+          <div style={{ marginTop: "5px" }}>
+            <button type="submit">検索</button>
+            <button type="button" onClick={handleReset} style={{ marginLeft: "5px" }}>
+              リセット
+            </button>
+          </div>
+        </form>
 
-      {/* イベント一覧 */}
-      <EventList
-        events={sortedEvents}
-        onDelete={deleteEvent}
-        onEdit={editEvent}
-        onSort={handleSort}
-        sortConfig={sortConfig}
-        onSelect={setSelectedEvent}
-      />
+        {/* イベント一覧 */}
+        <EventList
+          events={sortedEvents}
+          onDelete={() => {}} // 無効化
+          onEdit={() => {}} // 無効化
+          onSort={handleSort}
+          sortConfig={sortConfig}
+          onSelect={setSelectedEvent}
+          userRole={userRole}
+        />
 
-      {/* 追加・編集モーダル */}
-      {isModalOpen && (
-        <Modal onClose={cancelEdit}>
-          <EventForm
-            onAddEvent={addEvent}
-            onSaveEdit={saveEvent}
-            editingEvent={editingEvent}
-            onCancel={cancelEdit}
-          />
-        </Modal>
-      )}
+        {/* 詳細モーダル */}
+        {selectedEvent && (
+          <Modal onClose={closeDetail}>
+            <h2>{selectedEvent.title}</h2>
+            <p>
+              <strong>日付:</strong> {selectedEvent.date}
+            </p>
+            <p>
+              <strong>場所:</strong> {selectedEvent.location}
+            </p>
+            {selectedEvent.description && (
+              <p>
+                <strong>詳細:</strong> {selectedEvent.description}
+              </p>
+            )}
+            {selectedEvent.url && (
+              <p>
+                <a
+                  href={selectedEvent.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  イベントページを見る
+                </a>
+              </p>
+            )}
+            {selectedEvent.applicantName && (
+              <p>
+                <strong>申請者:</strong> {selectedEvent.applicantName}
+              </p>
+            )}
+            {selectedEvent.applicantEmail && (
+              <p>
+                <strong>申請者メール:</strong> {selectedEvent.applicantEmail}
+              </p>
+            )}
+          </Modal>
+        )}
+
+      </div>
+    );
+  } else {   // 3. guest 用の画面
+      return (
+      <div>
+        <h3>ゲストモード（閲覧のみ可能）</h3>
+
+        {/* 検索フォーム */}
+        <form onSubmit={handleSearchSubmit} style={{ marginBottom: "10px" }}>
+          {/* 名前・場所検索 */}
+          <div>
+            <input
+              type="text"
+              placeholder="イベント名や場所で検索"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              style={{ padding: "5px", width: "200px", marginRight: "5px" }}
+            />
+          </div>
+
+          {/* 日付範囲検索 */}
+          <div style={{ marginTop: "5px" }}>
+            <label>
+              開始日:{" "}
+              <input
+                type="date"
+                value={searchStartDateInput}
+                onChange={(e) => setSearchStartDateInput(e.target.value)}
+                style={{ padding: "5px", marginRight: "10px" }}
+              />
+            </label>
+            <label>
+              終了日:{" "}
+              <input
+                type="date"
+                value={searchEndDateInput}
+                onChange={(e) => setSearchEndDateInput(e.target.value)}
+                style={{ padding: "5px" }}
+              />
+            </label>
+          </div>
+
+          {/* 検索・リセットボタン */}
+          <div style={{ marginTop: "5px" }}>
+            <button type="submit">検索</button>
+            <button type="button" onClick={handleReset} style={{ marginLeft: "5px" }}>
+              リセット
+            </button>
+          </div>
+        </form>
+
+        {/* イベント一覧 */}
+        <EventList
+          events={sortedEvents}
+          onDelete={() => {}} // 無効化
+          onEdit={() => {}} // 無効化
+          onSort={handleSort}
+          sortConfig={sortConfig}
+          onSelect={setSelectedEvent}
+        />
 
       {/* 詳細モーダル */}
-      {selectedEvent && (
-        <Modal onClose={closeDetail}>
-          <h2>{selectedEvent.title}</h2>
-          <p>
-            <strong>日付:</strong> {selectedEvent.date}
-          </p>
-          <p>
-            <strong>場所:</strong> {selectedEvent.location}
-          </p>
-          {selectedEvent.description && (
+        {selectedEvent && (
+          <Modal onClose={closeDetail}>
+            <h2>{selectedEvent.title}</h2>
             <p>
-              <strong>詳細:</strong> {selectedEvent.description}
+              <strong>日付:</strong> {selectedEvent.date}
             </p>
-          )}
-          {selectedEvent.url && (
             <p>
-              <a
-                href={selectedEvent.url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                イベントページを見る
-              </a>
+              <strong>場所:</strong> {selectedEvent.location}
             </p>
-          )}
-          {selectedEvent.applicantName && (
-            <p>
-              <strong>申請者:</strong> {selectedEvent.applicantName}
-            </p>
-          )}
-          {selectedEvent.applicantEmail && (
-            <p>
-              <strong>申請者メール:</strong> {selectedEvent.applicantEmail}
-            </p>
-          )}
-        </Modal>
-      )}
+            {selectedEvent.description && (
+              <p>
+                <strong>詳細:</strong> {selectedEvent.description}
+              </p>
+            )}
+            {selectedEvent.url && (
+              <p>
+                <a
+                  href={selectedEvent.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  イベントページを見る
+                </a>
+              </p>
+            )}
+            {selectedEvent.applicantName && (
+              <p>
+                <strong>申請者:</strong> {selectedEvent.applicantName}
+              </p>
+            )}
+            {selectedEvent.applicantEmail && (
+              <p>
+                <strong>申請者メール:</strong> {selectedEvent.applicantEmail}
+              </p>
+            )}
+          </Modal>
+        )}
 
-      {/* 承認待ちイベント一覧 */}
-      <PendingEventList
-        pendingEvents={sortedPendingEvents}
-        approveEvent={approveEvent}
-        rejectEvent={rejectEvent}
-        onSort={handleSort}
-        sortConfig={sortConfig}
-        onSelect={setSelectedEvent}
-      />
+      </div>
+    );
+  }
 
-    </div>
-  );
 }
 
 export default App;
