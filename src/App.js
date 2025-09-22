@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Login from "./components/Login";
 import EventList from "./components/EventList";
 import EventForm from "./components/EventForm";
+import EventProposalForm from "./components/EventProposalForm";
 import Modal from "./components/Modal";
 import PendingEventList from "./components/PendingEventList";
 
@@ -40,10 +41,11 @@ function App() {
     }
   ]);
 
+  // 追加・編集用 state
   const [editingEvent, setEditingEvent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 詳細表示用
+  // 詳細表示用 state
   const [selectedEvent, setSelectedEvent] = useState(null);
 
   // 検索用 state
@@ -69,7 +71,11 @@ function App() {
     applicantName: "山田太郎",
     applicantEmail: "taro@example.com"
   }
-]);
+  ]);
+
+  // 申請中イベント用 state
+  const [isProposalOpen, setIsProposalOpen] = useState(false)
+  const [message, setMessage] = useState("");
 
   // ログイン画面処理
   const handleLogin = (username, password) => {
@@ -195,7 +201,7 @@ function App() {
     const eventToApprove = pendingEvents.find((e) => e.id === id);
     if (!eventToApprove) return;
     setPendingEvents(pendingEvents.filter((e) => e.id !== id));
-    setEvents([...events, eventToApprove]);
+    setEvents([...events, { ...eventToApprove, status: "approved" }]);
   };
 
   // 却下処理
@@ -216,6 +222,21 @@ function App() {
 
     return direction === "asc" ? comparison : -comparison;
   });
+
+  // 申請イベント表示処理
+  const proposeEvent = (newEvent) => {
+    setPendingEvents([
+      ...pendingEvents,
+      {
+        ...newEvent,
+        status: "pending",           // status を必ず pending にする
+        applicantName: username,  // ログインユーザ名を入れる
+      }
+    ]);
+    setMessage("申請しました！");
+    setTimeout(() => setMessage(""), 3000);  // 数秒後に自動で消す
+  };
+
 
   // ここからUserRoleによって表示画面を変更(1～3)
   if (userRole === "admin") {   // 1. admin 用の画面
@@ -341,13 +362,14 @@ function App() {
 
         {/* 承認待ちイベント一覧 */}
         <PendingEventList
-          pendingEvents={sortedPendingEvents}
-          approveEvent={approveEvent}
-          rejectEvent={rejectEvent}
+          events={sortedPendingEvents}
+          onapprove={approveEvent}
+          onreject={rejectEvent}
           onSort={handleSort}
           sortConfig={sortConfig}
           onSelect={setSelectedEvent}
           userRole={userRole}
+          accountName={username}
         />
 
       </div>
@@ -452,6 +474,35 @@ function App() {
             )}
           </Modal>
         )}
+
+        {/* 申請中イベント一覧 */}
+        <PendingEventList
+          events={sortedPendingEvents}
+          onapprove={approveEvent}
+          onreject={rejectEvent}
+          onSort={handleSort}
+          sortConfig={sortConfig}
+          onSelect={setSelectedEvent}
+          userRole={userRole}
+          accountName={username}
+        />
+
+        {/* 申請ボタン */}
+        <button onClick={() => setIsProposalOpen(true)}>＋ イベント申請</button>
+
+        {/* 申請モーダル */}
+        {isProposalOpen && (
+          <Modal onClose={() => setIsProposalOpen(false)}>
+            <EventProposalForm
+              onSubmit={proposeEvent}
+              onCancel={() => setIsProposalOpen(false)}
+            />
+          </Modal>
+        )}
+
+        {/* 申請完了後のメッセージ */}
+        {message && <div style={{ color: "green", marginTop: "10px" }}>{message}</div>}
+
 
       </div>
     );

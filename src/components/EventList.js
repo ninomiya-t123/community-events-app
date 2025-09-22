@@ -1,7 +1,15 @@
 // src/components/EventList.js
 import React from "react";
 
-function EventList({ events, onDelete, onEdit, onSort, sortConfig, onSelect, userRole }) {
+function EventList({
+  events,
+  onDelete,
+  onEdit,
+  onSort,
+  sortConfig,
+  onSelect,
+  userRole
+}) {
   const getSortIndicator = (key) => {
     if (sortConfig.key !== key) return "";
     return sortConfig.direction === "asc" ? " ▲" : " ▼";
@@ -26,7 +34,7 @@ function EventList({ events, onDelete, onEdit, onSort, sortConfig, onSelect, use
             <th onClick={() => onSort("location")} style={{ cursor: "pointer" }}>
               場所{getSortIndicator("location")}
             </th>
-	    {/* admin のときだけ「操作」列を表示 */}
+	        {/* admin のときだけ「操作」列を表示 */}
             {userRole === "admin" && <th>操作</th>}
 	  </tr>
         </thead>
