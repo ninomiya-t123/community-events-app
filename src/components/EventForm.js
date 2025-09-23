@@ -47,7 +47,9 @@ function EventForm({ onAddEvent, onSaveEdit, editingEvent, onCancel }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>{editingEvent ? "イベント編集" : "イベント追加"}</h2>
+      <h2 className="text-lg font-semibold mb-2">
+        {editingEvent ? "イベント編集" : "イベント追加"}
+      </h2>
 
       <div>
         <input
@@ -56,6 +58,7 @@ function EventForm({ onAddEvent, onSaveEdit, editingEvent, onCancel }) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
+          className="border border-gray-500 rounded px-3 py-2 w-full"
         />
       </div>
 
@@ -65,6 +68,7 @@ function EventForm({ onAddEvent, onSaveEdit, editingEvent, onCancel }) {
           value={date}
           onChange={(e) => setDate(e.target.value)}
           required
+          className="border border-gray-500 rounded px-3 py-2 w-full"
         />
       </div>
 
@@ -75,6 +79,7 @@ function EventForm({ onAddEvent, onSaveEdit, editingEvent, onCancel }) {
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           required
+          className="border border-gray-500 rounded px-3 py-2 w-full"
         />
       </div>
 
@@ -85,6 +90,7 @@ function EventForm({ onAddEvent, onSaveEdit, editingEvent, onCancel }) {
           onChange={(e) => setDescription(e.target.value)}
           rows="3"
           style={{ width: "100%" }}
+          className="border border-gray-500 rounded px-3 py-2 w-full"
         />
       </div>
 
@@ -94,11 +100,21 @@ function EventForm({ onAddEvent, onSaveEdit, editingEvent, onCancel }) {
           placeholder="イベントURL（任意）"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
+          className="border border-gray-500 rounded px-3 py-2 w-full"
         />
       </div>
 
-      <button type="submit">{editingEvent ? "保存" : "追加"}</button>
-      <button type="button" onClick={onCancel} style={{ marginLeft: "5px" }}>
+      <button
+        type="submit"
+        className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded"
+      >
+        {editingEvent ? "保存" : "追加"}
+      </button>
+      <button
+        type="button"
+        onClick={onCancel}
+        className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
+      >
         キャンセル
       </button>
     </form>

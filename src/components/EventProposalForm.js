@@ -38,47 +38,95 @@ function EventProposalForm({ onSubmit, onCancel }) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>イベント申請フォーム</h2>
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <h2 className="text-lg font-semibold mb-2">イベント申請フォーム</h2>
 
       <div>
-        <label>イベント名: </label>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+        <input
+          type="text"
+          placeholder="イベント名"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          className="border border-gray-500 rounded p-2 w-full"
+        />
       </div>
 
       <div>
-        <label>日付: </label>
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          required
+          className="border border-gray-500 rounded p-2 w-full"
+        />
       </div>
 
       <div>
-        <label>場所: </label>
-        <input value={location} onChange={(e) => setLocation(e.target.value)} required />
+        <input
+          type="text"
+          placeholder="場所"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          required
+          className="border border-gray-500 rounded p-2 w-full"
+        />
       </div>
 
       <div>
-        <label>詳細: </label>
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+        <textarea
+          placeholder="イベント詳細"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows="3"
+          className="border border-gray-500 rounded p-2 w-full"
+        />
       </div>
 
       <div>
-        <label>URL（任意）: </label>
-        <input value={url} onChange={(e) => setUrl(e.target.value)} />
+        <input
+          type="url"
+          placeholder="イベントURL（任意）"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          className="border border-gray-500 rounded p-2 w-full"
+        />
       </div>
 
       <div>
-        <label>申請者名: </label>
-        <input value={applicantName} onChange={(e) => setApplicantName(e.target.value)} required />
+        <input
+          type="text"
+          placeholder="申請者名"
+          value={applicantName}
+          onChange={(e) => setApplicantName(e.target.value)}
+          required
+          className="border border-gray-500 rounded p-2 w-full"
+        />
       </div>
 
       <div>
-        <label>申請者メール: </label>
-        <input type="email" value={applicantEmail} onChange={(e) => setApplicantEmail(e.target.value)} required />
+        <input
+          type="email"
+          placeholder="申請者メール"
+          value={applicantEmail}
+          onChange={(e) => setApplicantEmail(e.target.value)}
+          required
+          className="border border-gray-500 rounded p-2 w-full"
+        />
       </div>
 
-      <div style={{ marginTop: "10px" }}>
-        <button type="submit">申請</button>
-        <button type="button" onClick={onCancel} style={{ marginLeft: "5px" }}>
+      <div className="mt-3">
+        <button
+          type="submit"
+          className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded"
+        >
+          申請
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="ml-2 bg-gray-400 hover:bg-gray-500 text-white px-3 py-1 rounded"
+        >
           キャンセル
         </button>
       </div>

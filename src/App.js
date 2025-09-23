@@ -265,35 +265,44 @@ function App() {
 
   // ここからUserRoleによって表示画面を変更(1～3)
   if (userRole === "admin") {   // 1. admin 用の画面
-      return (
-      <div>
-        <h3>{userRole} としてログイン中</h3>
-        <button onClick={handleLogout} style={{ marginLeft: "10px" }}>
-          ログアウト
-        </button>
+    return (
+      <div className="p-4">
+      {/* ヘッダー部分 */}
+        <div className="flex justify-end items-center p-4">
+          <h3 className="text-lg font-semibold">{userRole} としてログイン中</h3>
+          <button
+            onClick={handleLogout}
+            className="ml-2.5 bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded"
+          >
+            ログアウト
+          </button>
+        </div>
 
         {/* 検索フォーム */}
-        <form onSubmit={handleSearchSubmit} style={{ marginBottom: "10px" }}>
+        <form
+          onSubmit={handleSearchSubmit}
+          className="mb-2.5 text-sm scale-90 origin-top-left"
+        >
           {/* 名前・場所検索 */}
-          <div>
+          <div className="mb-2">
             <input
               type="text"
               placeholder="イベント名や場所で検索"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              style={{ padding: "5px", width: "200px", marginRight: "5px" }}
+              className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
             />
           </div>
 
           {/* 日付範囲検索 */}
-          <div style={{ marginTop: "5px" }}>
-            <label>
+          <div className="mt-2 border-t pt-2">
+            <label className="mr-2">
               開始日:{" "}
               <input
                 type="date"
                 value={searchStartDateInput}
                 onChange={(e) => setSearchStartDateInput(e.target.value)}
-                style={{ padding: "5px", marginRight: "10px" }}
+                className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
               />
             </label>
             <label>
@@ -302,40 +311,54 @@ function App() {
                 type="date"
                 value={searchEndDateInput}
                 onChange={(e) => setSearchEndDateInput(e.target.value)}
-                style={{ padding: "5px" }}
+                className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
               />
             </label>
           </div>
 
           {/* 検索・リセットボタン */}
-          <div style={{ marginTop: "5px" }}>
-            <button type="submit">検索</button>
-            <button type="button" onClick={handleReset} style={{ marginLeft: "5px" }}>
+          <div className="mt-1.5">
+            <button
+              type="submit"
+              className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-2 py-1 rounded"
+            >
+              検索
+            </button>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="ml-1.5 bg-gray-400 hover:bg-gray-500 text-white text-sm px-2 py-1 rounded"
+            >
               リセット
             </button>
           </div>
         </form>
 
         {/* 追加ボタン */}
-        <button
-          onClick={() => {
-            setEditingEvent(null);
-            setIsModalOpen(true);
-          }}
-        >
-          ＋ イベント追加
-        </button>
+        <div className="flex justify-end items-center p-4">
+          <button
+            onClick={() => {
+              setEditingEvent(null);
+              setIsModalOpen(true);
+            }}
+            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+          >
+            ＋ イベント追加
+          </button>
+        </div>
 
         {/* イベント一覧 */}
-        <EventList
-          events={sortedEvents}
-          onDelete={deleteEvent}
-          onEdit={editEvent}
-          onSort={handleSort}
-          sortConfig={sortConfig}
-          onSelect={setSelectedEvent}
-          userRole={userRole}
-        />
+        <section className="mb-10">
+          <EventList
+            events={sortedEvents}
+            onDelete={deleteEvent}
+            onEdit={editEvent}
+            onSort={handleSort}
+            sortConfig={sortConfig}
+            onSelect={setSelectedEvent}
+            userRole={userRole}
+          />
+        </section>
 
         {/* 追加・編集モーダル */}
         {isModalOpen && (
@@ -352,87 +375,108 @@ function App() {
         {/* 詳細モーダル */}
         {selectedEvent && (
           <Modal onClose={closeDetail}>
-            <h2>{selectedEvent.title}</h2>
-            <p>
-              <strong>日付:</strong> {selectedEvent.date}
-            </p>
-            <p>
-              <strong>場所:</strong> {selectedEvent.location}
-            </p>
-            {selectedEvent.description && (
+            <div className="space-y-3">
+              <h2 className="text-xl font-bold mb-2">{selectedEvent.title}</h2>
+
               <p>
-                <strong>詳細:</strong> {selectedEvent.description}
+                <span className="font-semibold">日付:</span> {selectedEvent.date}
               </p>
-            )}
-            {selectedEvent.url && (
               <p>
-                <a
-                  href={selectedEvent.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  イベントページを見る
-                </a>
+                <span className="font-semibold">場所:</span> {selectedEvent.location}
               </p>
-            )}
-            {selectedEvent.applicantName && (
-              <p>
-                <strong>申請者:</strong> {selectedEvent.applicantName}
-              </p>
-            )}
-            {selectedEvent.applicantEmail && (
-              <p>
-                <strong>申請者メール:</strong> {selectedEvent.applicantEmail}
-              </p>
-            )}
+
+              {selectedEvent.description && (
+                <p>
+                  <span className="font-semibold">詳細:</span>{" "}
+                  {selectedEvent.description}
+                </p>
+              )}
+
+              {selectedEvent.url && (
+                <p>
+                  <a
+                    href={selectedEvent.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline hover:text-blue-800"
+                  >
+                    イベントページを見る
+                  </a>
+                </p>
+              )}
+
+              {selectedEvent.applicantName && (
+                <p>
+                  <span className="font-semibold">申請者:</span>{" "}
+                  {selectedEvent.applicantName}
+                </p>
+              )}
+
+              {selectedEvent.applicantEmail && (
+                <p>
+                  <span className="font-semibold">申請者メール:</span>{" "}
+                  {selectedEvent.applicantEmail}
+                </p>
+              )}
+            </div>
           </Modal>
         )}
 
         {/* 承認待ちイベント一覧 */}
-        <PendingEventList
-          events={sortedPendingEvents}
-          onapprove={approveEvent}
-          onreject={rejectEvent}
-          onSort={handleSort}
-          sortConfig={sortConfig}
-          onSelect={setSelectedEvent}
-          userRole={userRole}
-          accountName={username}
-        />
-
+        <section>
+          <PendingEventList
+            events={sortedPendingEvents}
+            onapprove={approveEvent}
+            onreject={rejectEvent}
+            onSort={handleSort}
+            sortConfig={sortConfig}
+            onSelect={setSelectedEvent}
+            userRole={userRole}
+            accountName={username}
+          />
+        </section>
       </div>
     );
 
   } else if (userRole === "user") {   // 2. user 用の画面
-      return (
-      <div>
-        <h3>{username} としてログイン中</h3>
-        <button onClick={handleLogout} style={{ marginLeft: "10px" }}>
-          ログアウト
-        </button>
+    return (
+      <div className="p-4">
+        {/* ヘッダー部分 */}
+        <div className="flex justify-end items-center p-4">
+          <h3 className="text-lg font-semibold">{username} としてログイン中</h3>
+          <button
+            onClick={handleLogout}
+            className="ml-2.5 bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded"
+          >
+            ログアウト
+          </button>
+        </div>
 
         {/* 検索フォーム */}
-        <form onSubmit={handleSearchSubmit} style={{ marginBottom: "10px" }}>
+        <form
+          onSubmit={handleSearchSubmit}
+          className="mb-2.5 text-sm scale-90 origin-top-left"
+        >
           {/* 名前・場所検索 */}
-          <div>
+          <div className="mb-2">
             <input
               type="text"
               placeholder="イベント名や場所で検索"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              style={{ padding: "5px", width: "200px", marginRight: "5px" }}
+              className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
             />
           </div>
 
           {/* 日付範囲検索 */}
-          <div style={{ marginTop: "5px" }}>
-            <label>
+          <div className="mt-2 border-t pt-2">
+            <label className="mr-2">
               開始日:{" "}
               <input
                 type="date"
                 value={searchStartDateInput}
                 onChange={(e) => setSearchStartDateInput(e.target.value)}
-                style={{ padding: "5px", marginRight: "10px" }}
+                className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
               />
             </label>
             <label>
@@ -441,84 +485,100 @@ function App() {
                 type="date"
                 value={searchEndDateInput}
                 onChange={(e) => setSearchEndDateInput(e.target.value)}
-                style={{ padding: "5px" }}
+                className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
               />
             </label>
           </div>
 
           {/* 検索・リセットボタン */}
-          <div style={{ marginTop: "5px" }}>
-            <button type="submit">検索</button>
-            <button type="button" onClick={handleReset} style={{ marginLeft: "5px" }}>
+          <div className="mt-1.5">
+            <button
+              type="submit"
+              className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-2 py-1 rounded"
+            >
+              検索
+            </button>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="ml-1.5 bg-gray-400 hover:bg-gray-500 text-white text-sm px-2 py-1 rounded"
+            >
               リセット
             </button>
           </div>
         </form>
 
         {/* イベント一覧 */}
-        <EventList
-          events={sortedEvents}
-          onDelete={() => {}} // 無効化
-          onEdit={() => {}} // 無効化
-          onSort={handleSort}
-          sortConfig={sortConfig}
-          onSelect={setSelectedEvent}
-          userRole={userRole}
-        />
+        <section className="mb-10">
+          <EventList
+            events={sortedEvents}
+            onDelete={() => {}} // 無効化
+            onEdit={() => {}} // 無効化
+            onSort={handleSort}
+            sortConfig={sortConfig}
+            onSelect={setSelectedEvent}
+            userRole={userRole}
+          />
+        </section>
 
         {/* 詳細モーダル */}
         {selectedEvent && (
           <Modal onClose={closeDetail}>
-            <h2>{selectedEvent.title}</h2>
-            <p>
-              <strong>日付:</strong> {selectedEvent.date}
-            </p>
-            <p>
-              <strong>場所:</strong> {selectedEvent.location}
-            </p>
-            {selectedEvent.description && (
+            <div className="space-y-3">
+              <h2 className="text-xl font-bold mb-2">{selectedEvent.title}</h2>
+
               <p>
-                <strong>詳細:</strong> {selectedEvent.description}
+                <span className="font-semibold">日付:</span> {selectedEvent.date}
               </p>
-            )}
-            {selectedEvent.url && (
               <p>
-                <a
-                  href={selectedEvent.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  イベントページを見る
-                </a>
+                <span className="font-semibold">場所:</span> {selectedEvent.location}
               </p>
-            )}
-            {selectedEvent.applicantName && (
-              <p>
-                <strong>申請者:</strong> {selectedEvent.applicantName}
-              </p>
-            )}
-            {selectedEvent.applicantEmail && (
-              <p>
-                <strong>申請者メール:</strong> {selectedEvent.applicantEmail}
-              </p>
-            )}
+
+              {selectedEvent.description && (
+                <p>
+                  <span className="font-semibold">詳細:</span>{" "}
+                  {selectedEvent.description}
+                </p>
+              )}
+
+              {selectedEvent.url && (
+                <p>
+                  <a
+                    href={selectedEvent.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline hover:text-blue-800"
+                  >
+                    イベントページを見る
+                  </a>
+                </p>
+              )}
+
+            </div>
           </Modal>
         )}
 
         {/* 申請中イベント一覧 */}
-        <PendingEventList
-          events={sortedPendingEvents}
-          onapprove={approveEvent}
-          onreject={rejectEvent}
-          onSort={handleSort}
-          sortConfig={sortConfig}
-          onSelect={setSelectedEvent}
-          userRole={userRole}
-          accountName={username}
-        />
+        <section>
+          <PendingEventList
+            events={sortedPendingEvents}
+            onapprove={approveEvent}
+            onreject={rejectEvent}
+            onSort={handleSort}
+            sortConfig={sortConfig}
+            onSelect={setSelectedEvent}
+            userRole={userRole}
+            accountName={username}
+          />
+        </section>
 
         {/* 申請ボタン */}
-        <button onClick={() => setIsProposalOpen(true)}>＋ イベント申請</button>
+        <button
+          onClick={() => setIsProposalOpen(true)}
+          className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+        >
+          ＋ イベント申請
+        </button>
 
         {/* 申請モーダル */}
         {isProposalOpen && (
@@ -537,35 +597,43 @@ function App() {
       </div>
     );
   } else {   // 3. guest 用の画面
-      return (
-      <div>
-        <h3>{userRole} としてログイン中</h3>
-        <button onClick={handleLogout} style={{ marginLeft: "10px" }}>
-          ログアウト
-        </button>
+    return (
+      <div className="p-4">
+        {/* ヘッダー部分 */}
+        <div className="flex justify-end items-center p-4">        <h3 className="text-lg font-semibold">{userRole} としてログイン中</h3>
+          <button
+            onClick={handleLogout}
+            className="ml-2.5 bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded"
+          >
+            ログアウト
+          </button>
+        </div>
 
         {/* 検索フォーム */}
-        <form onSubmit={handleSearchSubmit} style={{ marginBottom: "10px" }}>
+        <form
+          onSubmit={handleSearchSubmit}
+          className="mb-2.5 text-sm scale-90 origin-top-left"
+        >
           {/* 名前・場所検索 */}
-          <div>
+          <div className="mb-2">
             <input
               type="text"
               placeholder="イベント名や場所で検索"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              style={{ padding: "5px", width: "200px", marginRight: "5px" }}
+              className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
             />
           </div>
 
           {/* 日付範囲検索 */}
-          <div style={{ marginTop: "5px" }}>
-            <label>
+          <div className="mt-2 border-t pt-2">
+            <label className="mr-2">
               開始日:{" "}
               <input
                 type="date"
                 value={searchStartDateInput}
                 onChange={(e) => setSearchStartDateInput(e.target.value)}
-                style={{ padding: "5px", marginRight: "10px" }}
+                className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
               />
             </label>
             <label>
@@ -574,69 +642,78 @@ function App() {
                 type="date"
                 value={searchEndDateInput}
                 onChange={(e) => setSearchEndDateInput(e.target.value)}
-                style={{ padding: "5px" }}
+                className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
               />
             </label>
           </div>
 
           {/* 検索・リセットボタン */}
-          <div style={{ marginTop: "5px" }}>
-            <button type="submit">検索</button>
-            <button type="button" onClick={handleReset} style={{ marginLeft: "5px" }}>
+          <div className="mt-1.5">
+            <button
+              type="submit"
+              className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-2 py-1 rounded"
+            >
+              検索
+            </button>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="ml-1.5 bg-gray-400 hover:bg-gray-500 text-white text-sm px-2 py-1 rounded"
+            >
               リセット
             </button>
           </div>
         </form>
 
         {/* イベント一覧 */}
-        <EventList
-          events={sortedEvents}
-          onDelete={() => {}} // 無効化
-          onEdit={() => {}} // 無効化
-          onSort={handleSort}
-          sortConfig={sortConfig}
-          onSelect={setSelectedEvent}
-        />
+        <section className="mb-10">
+          <EventList
+            events={sortedEvents}
+            onDelete={() => {}} // 無効化
+            onEdit={() => {}} // 無効化
+            onSort={handleSort}
+            sortConfig={sortConfig}
+            onSelect={setSelectedEvent}
+          />
+        </section>
 
-      {/* 詳細モーダル */}
+        {/* 詳細モーダル */}
         {selectedEvent && (
           <Modal onClose={closeDetail}>
-            <h2>{selectedEvent.title}</h2>
-            <p>
-              <strong>日付:</strong> {selectedEvent.date}
-            </p>
-            <p>
-              <strong>場所:</strong> {selectedEvent.location}
-            </p>
-            {selectedEvent.description && (
+            <div className="space-y-3">
+              <h2 className="text-xl font-bold mb-2">{selectedEvent.title}</h2>
+
               <p>
-                <strong>詳細:</strong> {selectedEvent.description}
+                <span className="font-semibold">日付:</span> {selectedEvent.date}
               </p>
-            )}
-            {selectedEvent.url && (
               <p>
-                <a
-                  href={selectedEvent.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  イベントページを見る
-                </a>
+                <span className="font-semibold">場所:</span> {selectedEvent.location}
               </p>
-            )}
-            {selectedEvent.applicantName && (
-              <p>
-                <strong>申請者:</strong> {selectedEvent.applicantName}
-              </p>
-            )}
-            {selectedEvent.applicantEmail && (
-              <p>
-                <strong>申請者メール:</strong> {selectedEvent.applicantEmail}
-              </p>
-            )}
+
+              {selectedEvent.description && (
+                <p>
+                  <span className="font-semibold">詳細:</span>{" "}
+                  {selectedEvent.description}
+                </p>
+              )}
+
+              {selectedEvent.url && (
+                <p>
+                  <a
+                    href={selectedEvent.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline hover:text-blue-800"
+                  >
+                    イベントページを見る
+                  </a>
+                </p>
+              )}
+
+            </div>
           </Modal>
         )}
-
+        
       </div>
     );
   }
