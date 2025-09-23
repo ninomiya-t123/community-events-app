@@ -69,7 +69,8 @@ function App() {
     description: "初心者向けヨガクラスを提案します！",
     url: "",
     applicantName: "山田太郎",
-    applicantEmail: "taro@example.com"
+    applicantEmail: "taro@example.com",
+    applicantuserName: "taro.yamada"
   }
   ]);
 
@@ -229,8 +230,8 @@ function App() {
       ...pendingEvents,
       {
         ...newEvent,
-        status: "pending",           // status を必ず pending にする
-        applicantName: username,  // ログインユーザ名を入れる
+        status: "pending",            // status を必ず pending にする
+        applicantuserName: username,  // ログインユーザ名を入れる
       }
     ]);
     setMessage("申請しました！");

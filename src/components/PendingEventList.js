@@ -79,7 +79,7 @@ function PendingEventList({
   } else {
     // ログインしたアカウントで申請したイベントのみ表示
     const filteredEvents = events.filter(
-      (e) => e.applicantName === accountName && e.status === "pending"
+      (e) => e.applicantuserName === accountName && e.status === "pending"
     );
     
     return (
