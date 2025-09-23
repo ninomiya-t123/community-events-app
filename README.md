@@ -114,7 +114,7 @@ npm start
 ---
 
 ## 📲 動作イメージ
-それぞれのスクリーンショットを添付してます。
+それぞれのスクリーンショットを添付しています。<br>
 ※（No.X）は 機能の詳細・動作確認方法 内の表に記載してあるNo.となります。
 - **ログイン画面(No.1)**
 ![ログイン画面](https://github.com/ninomiya-t123/community-events-app/blob/main/public/LoginScreen.png)
