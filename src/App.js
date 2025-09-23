@@ -13,6 +13,9 @@ function App() {
   const [userRole, setUserRole] = useState(null); // "admin", "user", "guest"
   const [username, setUsername] = useState("");
 
+  // メッセージ表示用 state
+  const [message, setMessage] = useState("");
+
   // イベント一覧用 state
   const [events, setEvents] = useState([
     {
@@ -76,23 +79,42 @@ function App() {
 
   // 申請中イベント用 state
   const [isProposalOpen, setIsProposalOpen] = useState(false)
-  const [message, setMessage] = useState("");
 
-  // ログイン画面処理
+  // ログイン処理
   const handleLogin = (username, password) => {
     if (username === "admin" && password === "admin") {
       setUserRole("admin");
+      setUsername("admin");
     } else {
       setUserRole("user");
       setUsername(username);
     }
   };
+  
+  // ゲストログイン処理
   const handleGuest = () => {
     setUserRole("guest");
+    setUsername("guest");
   };
-  if (!userRole) {
-    // 初期状態のときは Login コンポーネントを表示
-    return <Login onLogin={handleLogin} onGuest={handleGuest} />;
+
+  // ログアウト処理
+  const handleLogout = () => {
+    setUserRole(null);   // ログイン状態解除
+    setUsername("");     // ユーザー名クリア
+    setMessage("ログアウトしました");
+    
+    setTimeout(() => setMessage(""), 3000);  // 数秒後に自動で消す
+  };
+  
+  // ログイン画面表示
+  if (!userRole) {  // userRoleがnullのときにログイン画面表示
+    return (
+      <div>
+        <Login onLogin={handleLogin} onGuest={handleGuest} />
+        {/* ログアウト後はメッセージ表示 */}
+        {message && <p style={{ color: "green" }}>{message}</p>}
+      </div>
+    );
   }
 
   // 追加処理
@@ -239,11 +261,16 @@ function App() {
   };
 
 
+
+
   // ここからUserRoleによって表示画面を変更(1～3)
   if (userRole === "admin") {   // 1. admin 用の画面
       return (
       <div>
-        <h3>ログイン成功: {userRole} としてログイン中</h3>
+        <h3>{userRole} としてログイン中</h3>
+        <button onClick={handleLogout} style={{ marginLeft: "10px" }}>
+          ログアウト
+        </button>
 
         {/* 検索フォーム */}
         <form onSubmit={handleSearchSubmit} style={{ marginBottom: "10px" }}>
@@ -379,8 +406,10 @@ function App() {
   } else if (userRole === "user") {   // 2. user 用の画面
       return (
       <div>
-        <h3>ログイン成功: {username} としてログイン中</h3>
-
+        <h3>{username} としてログイン中</h3>
+        <button onClick={handleLogout} style={{ marginLeft: "10px" }}>
+          ログアウト
+        </button>
 
         {/* 検索フォーム */}
         <form onSubmit={handleSearchSubmit} style={{ marginBottom: "10px" }}>
@@ -510,7 +539,10 @@ function App() {
   } else {   // 3. guest 用の画面
       return (
       <div>
-        <h3>ゲストモード（閲覧のみ可能）</h3>
+        <h3>{userRole} としてログイン中</h3>
+        <button onClick={handleLogout} style={{ marginLeft: "10px" }}>
+          ログアウト
+        </button>
 
         {/* 検索フォーム */}
         <form onSubmit={handleSearchSubmit} style={{ marginBottom: "10px" }}>
