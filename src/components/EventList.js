@@ -1,15 +1,40 @@
-// src/components/EventList.js
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { supabase } from "../supabaseClient";
+import Modal from "./Modal";
+import EventForm from "./EventForm";
 
-function EventList({
-  events,
-  onDelete,
-  onEdit,
-  onSort,
-  sortConfig,
-  onSelect,
-  userRole
-}) {
+function EventList
+  ({ 
+    events,
+    setEvents,
+    onDelete,
+    onEdit,
+    onSort,
+    sortConfig,
+    onSelect,
+    userRole
+  }) {
+
+  // 初回ロード時にデータ取得
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  // Supabase からデータ取得
+  const fetchEvents = async () => {
+    const { data, error } = await supabase
+      .from("Events")
+      .select("*")
+      .eq("flag", 1)
+      .order("date", { ascending: true });
+
+    if (error) {
+      console.error("取得エラー:", error);
+    } else {
+      setEvents(data);  // 親(App.js)に反映
+    }
+  };
+
   const getSortIndicator = (key) => {
     if (sortConfig.key !== key) return "";
     return sortConfig.direction === "asc" ? " ▲" : " ▼";
@@ -17,42 +42,26 @@ function EventList({
 
   return (
     <div className="mt-4">
-      <h2 className="text-xl font-semibold mb-2">
-        イベント一覧
-      </h2>
+      <h2 className="text-xl font-semibold mb-2">イベント一覧</h2>
       <table className="w-full border border-gray-500 border-collapse">
         <thead className="bg-gray-100">
           <tr>
-            <th
-              onClick={() => onSort("title")}
-              className="cursor-pointer border border-gray-500 px-3 py-2 text-left"
-            >
+            <th onClick={() => onSort("title")} className="cursor-pointer border px-3 py-2 text-left">
               イベント名{getSortIndicator("title")}
             </th>
-            <th
-              onClick={() => onSort("date")}
-              className="cursor-pointer border border-gray-500 px-3 py-2 text-left"
-            >
+            <th onClick={() => onSort("date")} className="cursor-pointer border px-3 py-2 text-left">
               日付{getSortIndicator("date")}
             </th>
-            <th
-              onClick={() => onSort("location")}
-              className="cursor-pointer border border-gray-500 px-3 py-2 text-left"
-            >
+            <th onClick={() => onSort("location")} className="cursor-pointer border px-3 py-2 text-left">
               場所{getSortIndicator("location")}
             </th>
-	        {/* admin のときだけ固定幅の「操作」列を表示 */}
-            {userRole === "admin" && (
-              <th className="border border-gray-500 px-3 py-2 w-[140px] text-center">
-                操作
-              </th>
-            )}
-	      </tr>
+            {userRole === "admin" && <th className="border px-3 py-2 w-[140px] text-center">操作</th>}
+          </tr>
         </thead>
         <tbody>
           {events.map((event) => (
             <tr key={event.id} className="hover:bg-gray-50">
-              <td className="border border-gray-500 px-3 py-2">
+              <td className="border px-3 py-2">
                 <span
                   onClick={() => onSelect(event)}
                   className="text-blue-600 underline cursor-pointer"
@@ -60,11 +69,12 @@ function EventList({
                   {event.title}
                 </span>
               </td>
-              <td className="border border-gray-500 px-3 py-2">{event.date}</td>
-              <td className="border border-gray-500 px-3 py-2">{event.location}</td>       
-              {/* admin のときだけ「編集・削除ボタン」を表示 */}
+              <td className="border px-3 py-2">{event.date}</td>
+              <td className="border px-3 py-2">{event.location}</td>
+
+              {/* 管理者のみ「編集・削除」ボタン表示 */}
               {userRole === "admin" && (
-                <td className="border border-gray-500 px-3 py-2 w-[140px] text-center">
+                <td className="border px-3 py-2 w-[140px] text-center">
                   <div className="flex justify-center space-x-2">
                     <button
                       onClick={() => onEdit(event.id)}
@@ -85,7 +95,6 @@ function EventList({
           ))}
         </tbody>
       </table>
-
     </div>
   );
 }

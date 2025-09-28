@@ -7,6 +7,9 @@ function EventForm({ onAddEvent, onSaveEdit, editingEvent, onCancel }) {
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [url, setUrl] = useState("");
+  const [applicantName, setApplicantName] = useState("");
+  const [applicantEmail, setApplicantEmail] = useState("");
+  const [flag, setFlag] = useState("");
 
   // 編集時に既存データを反映
   useEffect(() => {
@@ -25,23 +28,32 @@ function EventForm({ onAddEvent, onSaveEdit, editingEvent, onCancel }) {
     }
   }, [editingEvent]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title || !date || !location) return;
+    console.log("フォーム送信前", { title, date, location, description });
+    if (!title || !date || !location || !description) return;
 
     const newEvent = {
-      id: editingEvent ? editingEvent.id : Date.now(),
       title,
       date,
       location,
-      description,
-      url, // URLは空欄でもOK
+      description: description || "",
+      url: url || "",
+      applicantName: "",
+      applicantEmail: "",
+      applicantuserName: "",
+      flag: 1,                // 表示用
     };
 
-    if (editingEvent) {
-      onSaveEdit(newEvent);
-    } else {
-      onAddEvent(newEvent);
+    try {
+      if (editingEvent) {
+        await onSaveEdit({ ...editingEvent, ...newEvent });
+      } else {
+        await onAddEvent(newEvent);
+      }
+    } catch (err) {
+      console.error("フォーム送信エラー:", err);
+      alert("イベントの送信に失敗しました。コンソールを確認してください。");
     }
   };
 
