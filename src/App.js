@@ -3,9 +3,12 @@ import React, { useState } from "react";
 import Login from "./components/Login";
 import EventList from "./components/EventList";
 import EventForm from "./components/EventForm";
+import DetailForm from "./components/DetailForm.js";
+import SearchForm from "./components/SearchForm";
 import EventProposalForm from "./components/EventProposalForm";
 import Modal from "./components/Modal";
 import PendingEventList from "./components/PendingEventList";
+import { supabase } from "./supabaseClient";
 
 function App() {
 
@@ -17,32 +20,7 @@ function App() {
   const [message, setMessage] = useState("");
 
   // イベント一覧用 state
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      title: "夏祭り",
-      date: "2025-08-01",
-      location: "中央公園",
-      description: "地域の伝統行事として毎年開催される夏祭りです。",
-      url: "https://example.com/matsuri"
-    },
-    {
-      id: 2,
-      title: "防災訓練",
-      date: "2025-09-15",
-      location: "市民会館",
-      description: "地域住民向け防災訓練。避難経路や救急対応を学びます。",
-      url: ""
-    },
-    {
-      id: 3,
-      title: "子ども工作教室",
-      date: "2025-10-05",
-      location: "図書館",
-      description: "親子で楽しめる工作体験イベントです。",
-      url: "https://example.com/kousaku"
-    }
-  ]);
+  const [events, setEvents] = useState([]);
 
   // 追加・編集用 state
   const [editingEvent, setEditingEvent] = useState(null);
@@ -63,19 +41,7 @@ function App() {
   const [sortConfig, setSortConfig] = useState({ key: "date", direction: "asc" });
 
  // 承認待ちイベント用 state
-  const [pendingEvents, setPendingEvents] = useState([
-  { 
-    id: 101,
-    title: "ヨガ教室",
-    date: "2025-11-01",
-    location: "公民館",
-    description: "初心者向けヨガクラスを提案します！",
-    url: "",
-    applicantName: "山田太郎",
-    applicantEmail: "taro@example.com",
-    applicantuserName: "taro.yamada"
-  }
-  ]);
+  const [pendingEvents, setPendingEvents] = useState([]);
 
   // 申請中イベント用 state
   const [isProposalOpen, setIsProposalOpen] = useState(false)
@@ -118,14 +84,55 @@ function App() {
   }
 
   // 追加処理
-  const addEvent = (newEvent) => {
-    setEvents([...events, newEvent]);
-    setIsModalOpen(false);
+  const addEvent = async (newEvent) => {
+    try {
+      const { data, error } = await supabase.from("Events").insert([
+        {
+          title: newEvent.title,
+          date: newEvent.date,
+          location: newEvent.location,
+          description: newEvent.description || "",
+          url: newEvent.url || "",
+          applicantName: "管理者",
+          applicantEmail: "",
+          applicantuserName: userRole,
+          flag: newEvent.flag,
+        },
+      ])
+      .select();
+      
+      console.log("insert 結果:", { data, error });
+
+      if (error){
+       console.error("追加エラー:", error);
+       alert("イベントの追加に失敗しました。");
+       return;
+      }
+      
+      if (data && data.length > 0) {
+        setEvents([...events, data[0]]);
+      }
+      
+      setIsModalOpen(false);   // モーダルを閉じる
+      setMessage("追加しました！");
+      setTimeout(() => setMessage(""), 3000);  // 数秒後に自動で消す
+      
+    } catch (err) {
+      console.error("追加エラー:", err);
+      alert("イベントの追加に失敗しました。コンソールを確認してください。");
+    }
+    
   };
 
-  // 削除処理
-  const deleteEvent = (id) => {
-    setEvents(events.filter((event) => event.id !== id));
+  // 論理削除処理
+  const deleteEvent = async (id) => {
+    const { error } = await supabase
+      .from("Events")
+      .update({ flag: 0 })
+      .eq("id", id);
+
+    if (error) console.error("削除エラー:", error);
+    else setEvents(events.filter((e) => e.id !== id));
   };
 
   // 編集開始
@@ -136,14 +143,24 @@ function App() {
   };
 
   // 編集保存
-  const saveEvent = (updatedEvent) => {
-    setEvents(
-      events.map((event) =>
-        event.id === updatedEvent.id ? updatedEvent : event
-      )
-    );
-    setEditingEvent(null);
-    setIsModalOpen(false);
+  const saveEvent = async (updatedEvent) => {
+    const { error } = await supabase
+      .from("Events")
+      .update({
+        title: updatedEvent.title,
+        date: updatedEvent.date,
+        location: updatedEvent.location,
+        description: updatedEvent.description || "",
+        url: updatedEvent.url || "",
+      })
+      .eq("id", updatedEvent.id);
+
+    if (error) console.error("更新エラー:", error);
+    else {
+      setEvents(events.map((e) => (e.id === updatedEvent.id ? updatedEvent : e)));
+      setEditingEvent(null);
+      setIsModalOpen(false);
+    }
   };
 
   // 編集キャンセル
@@ -220,16 +237,42 @@ function App() {
   };
 
   // 承認処理
-  const approveEvent = (id) => {
-    const eventToApprove = pendingEvents.find((e) => e.id === id);
-    if (!eventToApprove) return;
-    setPendingEvents(pendingEvents.filter((e) => e.id !== id));
-    setEvents([...events, { ...eventToApprove, status: "approved" }]);
+  const approveEvent = async (id) => {
+    try{
+      const { data, error } = await supabase
+        .from("Events")
+        .update({ flag: 1 })
+        .eq("id", id)
+        .select();
+
+      if (error) {
+        console.error("承認エラー:", error);
+        return;
+      }
+
+      // 更新結果が返ってこなければ処理中止
+      if (!data || data.length === 0) return;
+
+      // 承認待ちリストから削除
+      setPendingEvents(pendingEvents.filter((e) => e.id !== id));
+
+      // 通常イベント一覧に追加
+      setEvents([...events, data[0]]);
+    } catch (err) {
+      console.error("承認処理中の例外:", err);
+    }
   };
 
+
   // 却下処理
-  const rejectEvent = (id) => {
-    setPendingEvents(pendingEvents.filter((e) => e.id !== id));
+  const rejectEvent = async (id) => {
+    const { error } = await supabase
+      .from("Events")
+      .update({ flag: 3 })
+      .eq("id", id);
+
+    if (error) console.error("却下エラー:", error);
+    else setPendingEvents(pendingEvents.filter((e) => e.id !== id));
   };
 
   // ソート処理（承認待ち用）
@@ -246,19 +289,47 @@ function App() {
     return direction === "asc" ? comparison : -comparison;
   });
 
-  // 申請イベント表示処理
-  const proposeEvent = (newEvent) => {
-    setPendingEvents([
-      ...pendingEvents,
-      {
-        ...newEvent,
-        status: "pending",            // status を必ず pending にする
-        applicantuserName: username,  // ログインユーザ名を入れる
+  // 申請処理
+  const proposeEvent = async (newEvent) => {
+    try {
+      const { data, error } = await supabase.from("Events").insert([
+        {
+          title: newEvent.title,
+          date: newEvent.date,
+          location: newEvent.location,
+          description: newEvent.description || "",
+          url: newEvent.url || "",
+          applicantName: newEvent.applicantName,
+          applicantEmail: newEvent.applicantEmail,
+          applicantuserName: newEvent.applicantuserName,
+          flag: newEvent.flag,
+        },
+      ])
+      .select();
+      
+      console.log("insert 結果:", { data, error });
+
+      if (error) {
+        console.error("申請エラー:", error);
+        alert("イベントの追加に失敗しました。");
+        return;
+      } 
+      
+      if (data && data.length > 0) {
+        setPendingEvents([...pendingEvents, data[0]]);
       }
-    ]);
-    setMessage("申請しました！");
-    setTimeout(() => setMessage(""), 3000);  // 数秒後に自動で消す
+      
+      setIsProposalOpen(false);   // モーダルを閉じる
+      setMessage("申請しました！");
+      setTimeout(() => setMessage(""), 3000);  // 数秒後に自動で消す
+    
+    } catch (err) {
+      console.error("申請エラー:", err);
+      alert("イベントの申請に失敗しました。コンソールを確認してください。");
+    }
+    
   };
+
 
 
 
@@ -267,7 +338,7 @@ function App() {
   if (userRole === "admin") {   // 1. admin 用の画面
     return (
       <div className="p-4">
-      {/* ヘッダー部分 */}
+        {/* ヘッダー部分 */}
         <div className="flex justify-end items-center p-4">
           <h3 className="text-lg font-semibold">{userRole} としてログイン中</h3>
           <button
@@ -279,60 +350,16 @@ function App() {
         </div>
 
         {/* 検索フォーム */}
-        <form
-          onSubmit={handleSearchSubmit}
-          className="mb-2.5 text-sm scale-90 origin-top-left"
-        >
-          {/* 名前・場所検索 */}
-          <div className="mb-2">
-            <input
-              type="text"
-              placeholder="イベント名や場所で検索"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
-            />
-          </div>
-
-          {/* 日付範囲検索 */}
-          <div className="mt-2 border-t pt-2">
-            <label className="mr-2">
-              開始日:{" "}
-              <input
-                type="date"
-                value={searchStartDateInput}
-                onChange={(e) => setSearchStartDateInput(e.target.value)}
-                className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
-              />
-            </label>
-            <label>
-              終了日:{" "}
-              <input
-                type="date"
-                value={searchEndDateInput}
-                onChange={(e) => setSearchEndDateInput(e.target.value)}
-                className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
-              />
-            </label>
-          </div>
-
-          {/* 検索・リセットボタン */}
-          <div className="mt-1.5">
-            <button
-              type="submit"
-              className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-2 py-1 rounded"
-            >
-              検索
-            </button>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="ml-1.5 bg-gray-400 hover:bg-gray-500 text-white text-sm px-2 py-1 rounded"
-            >
-              リセット
-            </button>
-          </div>
-        </form>
+        <SearchForm
+          searchInput={searchInput}
+          setSearchInput={setSearchInput}
+          searchStartDateInput={searchStartDateInput}
+          setSearchStartDateInput={setSearchStartDateInput}
+          searchEndDateInput={searchEndDateInput}
+          setSearchEndDateInput={setSearchEndDateInput}
+          handleSearchSubmit={handleSearchSubmit}
+          handleReset={handleReset}
+        />
 
         {/* 追加ボタン */}
         <div className="flex justify-end items-center p-4">
@@ -351,6 +378,7 @@ function App() {
         <section className="mb-10">
           <EventList
             events={sortedEvents}
+            setEvents={setEvents} 
             onDelete={deleteEvent}
             onEdit={editEvent}
             onSort={handleSort}
@@ -375,59 +403,24 @@ function App() {
         {/* 詳細モーダル */}
         {selectedEvent && (
           <Modal onClose={closeDetail}>
-            <div className="space-y-3">
-              <h2 className="text-xl font-bold mb-2">{selectedEvent.title}</h2>
-
-              <p>
-                <span className="font-semibold">日付:</span> {selectedEvent.date}
-              </p>
-              <p>
-                <span className="font-semibold">場所:</span> {selectedEvent.location}
-              </p>
-
-              {selectedEvent.description && (
-                <p>
-                  <span className="font-semibold">詳細:</span>{" "}
-                  {selectedEvent.description}
-                </p>
-              )}
-
-              {selectedEvent.url && (
-                <p>
-                  <a
-                    href={selectedEvent.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline hover:text-blue-800"
-                  >
-                    イベントページを見る
-                  </a>
-                </p>
-              )}
-
-              {selectedEvent.applicantName && (
-                <p>
-                  <span className="font-semibold">申請者:</span>{" "}
-                  {selectedEvent.applicantName}
-                </p>
-              )}
-
-              {selectedEvent.applicantEmail && (
-                <p>
-                  <span className="font-semibold">申請者メール:</span>{" "}
-                  {selectedEvent.applicantEmail}
-                </p>
-              )}
-            </div>
+            <DetailForm
+              selectedEvent={selectedEvent}
+              onClose={closeDetail}
+              userRole={userRole}
+            />
           </Modal>
         )}
+
+        {/* 追加完了後のメッセージ */}
+        {message && <div style={{ color: "green", marginTop: "10px" }}>{message}</div>}
 
         {/* 承認待ちイベント一覧 */}
         <section>
           <PendingEventList
-            events={sortedPendingEvents}
-            onapprove={approveEvent}
-            onreject={rejectEvent}
+            pendingEvents={sortedPendingEvents}
+            setPendingEvents={setPendingEvents} 
+            onApprove={approveEvent}
+            onReject={rejectEvent}
             onSort={handleSort}
             sortConfig={sortConfig}
             onSelect={setSelectedEvent}
@@ -435,6 +428,7 @@ function App() {
             accountName={username}
           />
         </section>
+
       </div>
     );
 
@@ -453,65 +447,22 @@ function App() {
         </div>
 
         {/* 検索フォーム */}
-        <form
-          onSubmit={handleSearchSubmit}
-          className="mb-2.5 text-sm scale-90 origin-top-left"
-        >
-          {/* 名前・場所検索 */}
-          <div className="mb-2">
-            <input
-              type="text"
-              placeholder="イベント名や場所で検索"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
-            />
-          </div>
-
-          {/* 日付範囲検索 */}
-          <div className="mt-2 border-t pt-2">
-            <label className="mr-2">
-              開始日:{" "}
-              <input
-                type="date"
-                value={searchStartDateInput}
-                onChange={(e) => setSearchStartDateInput(e.target.value)}
-                className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
-              />
-            </label>
-            <label>
-              終了日:{" "}
-              <input
-                type="date"
-                value={searchEndDateInput}
-                onChange={(e) => setSearchEndDateInput(e.target.value)}
-                className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
-              />
-            </label>
-          </div>
-
-          {/* 検索・リセットボタン */}
-          <div className="mt-1.5">
-            <button
-              type="submit"
-              className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-2 py-1 rounded"
-            >
-              検索
-            </button>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="ml-1.5 bg-gray-400 hover:bg-gray-500 text-white text-sm px-2 py-1 rounded"
-            >
-              リセット
-            </button>
-          </div>
-        </form>
+        <SearchForm
+          searchInput={searchInput}
+          setSearchInput={setSearchInput}
+          searchStartDateInput={searchStartDateInput}
+          setSearchStartDateInput={setSearchStartDateInput}
+          searchEndDateInput={searchEndDateInput}
+          setSearchEndDateInput={setSearchEndDateInput}
+          handleSearchSubmit={handleSearchSubmit}
+          handleReset={handleReset}
+        />
 
         {/* イベント一覧 */}
         <section className="mb-10">
           <EventList
             events={sortedEvents}
+            setEvents={setEvents} 
             onDelete={() => {}} // 無効化
             onEdit={() => {}} // 無効化
             onSort={handleSort}
@@ -524,46 +475,21 @@ function App() {
         {/* 詳細モーダル */}
         {selectedEvent && (
           <Modal onClose={closeDetail}>
-            <div className="space-y-3">
-              <h2 className="text-xl font-bold mb-2">{selectedEvent.title}</h2>
-
-              <p>
-                <span className="font-semibold">日付:</span> {selectedEvent.date}
-              </p>
-              <p>
-                <span className="font-semibold">場所:</span> {selectedEvent.location}
-              </p>
-
-              {selectedEvent.description && (
-                <p>
-                  <span className="font-semibold">詳細:</span>{" "}
-                  {selectedEvent.description}
-                </p>
-              )}
-
-              {selectedEvent.url && (
-                <p>
-                  <a
-                    href={selectedEvent.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline hover:text-blue-800"
-                  >
-                    イベントページを見る
-                  </a>
-                </p>
-              )}
-
-            </div>
+            <DetailForm
+              selectedEvent={selectedEvent}
+              onClose={closeDetail}
+              userRole={userRole}
+            />
           </Modal>
         )}
-
+        
         {/* 申請中イベント一覧 */}
         <section>
           <PendingEventList
-            events={sortedPendingEvents}
-            onapprove={approveEvent}
-            onreject={rejectEvent}
+            pendingEvents={sortedPendingEvents}
+            setPendingEvents={setPendingEvents} 
+            onApprove={approveEvent}
+            onReject={rejectEvent}
             onSort={handleSort}
             sortConfig={sortConfig}
             onSelect={setSelectedEvent}
@@ -593,7 +519,6 @@ function App() {
         {/* 申請完了後のメッセージ */}
         {message && <div style={{ color: "green", marginTop: "10px" }}>{message}</div>}
 
-
       </div>
     );
   } else {   // 3. guest 用の画面
@@ -610,107 +535,39 @@ function App() {
         </div>
 
         {/* 検索フォーム */}
-        <form
-          onSubmit={handleSearchSubmit}
-          className="mb-2.5 text-sm scale-90 origin-top-left"
-        >
-          {/* 名前・場所検索 */}
-          <div className="mb-2">
-            <input
-              type="text"
-              placeholder="イベント名や場所で検索"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
-            />
-          </div>
-
-          {/* 日付範囲検索 */}
-          <div className="mt-2 border-t pt-2">
-            <label className="mr-2">
-              開始日:{" "}
-              <input
-                type="date"
-                value={searchStartDateInput}
-                onChange={(e) => setSearchStartDateInput(e.target.value)}
-                className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
-              />
-            </label>
-            <label>
-              終了日:{" "}
-              <input
-                type="date"
-                value={searchEndDateInput}
-                onChange={(e) => setSearchEndDateInput(e.target.value)}
-                className="text-sm p-1 w-[160px] mr-1 border border-gray-500 rounded focus:outline-none focus:border-gray-600"
-              />
-            </label>
-          </div>
-
-          {/* 検索・リセットボタン */}
-          <div className="mt-1.5">
-            <button
-              type="submit"
-              className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-2 py-1 rounded"
-            >
-              検索
-            </button>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="ml-1.5 bg-gray-400 hover:bg-gray-500 text-white text-sm px-2 py-1 rounded"
-            >
-              リセット
-            </button>
-          </div>
-        </form>
+        <SearchForm
+          searchInput={searchInput}
+          setSearchInput={setSearchInput}
+          searchStartDateInput={searchStartDateInput}
+          setSearchStartDateInput={setSearchStartDateInput}
+          searchEndDateInput={searchEndDateInput}
+          setSearchEndDateInput={setSearchEndDateInput}
+          handleSearchSubmit={handleSearchSubmit}
+          handleReset={handleReset}
+        />
 
         {/* イベント一覧 */}
         <section className="mb-10">
           <EventList
             events={sortedEvents}
+            setEvents={setEvents} 
             onDelete={() => {}} // 無効化
             onEdit={() => {}} // 無効化
             onSort={handleSort}
             sortConfig={sortConfig}
             onSelect={setSelectedEvent}
+            userRole={userRole}
           />
         </section>
 
         {/* 詳細モーダル */}
         {selectedEvent && (
           <Modal onClose={closeDetail}>
-            <div className="space-y-3">
-              <h2 className="text-xl font-bold mb-2">{selectedEvent.title}</h2>
-
-              <p>
-                <span className="font-semibold">日付:</span> {selectedEvent.date}
-              </p>
-              <p>
-                <span className="font-semibold">場所:</span> {selectedEvent.location}
-              </p>
-
-              {selectedEvent.description && (
-                <p>
-                  <span className="font-semibold">詳細:</span>{" "}
-                  {selectedEvent.description}
-                </p>
-              )}
-
-              {selectedEvent.url && (
-                <p>
-                  <a
-                    href={selectedEvent.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline hover:text-blue-800"
-                  >
-                    イベントページを見る
-                  </a>
-                </p>
-              )}
-
-            </div>
+            <DetailForm
+              selectedEvent={selectedEvent}
+              onClose={closeDetail}
+              userRole={userRole}
+            />
           </Modal>
         )}
         
