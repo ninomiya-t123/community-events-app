@@ -41,19 +41,7 @@ function App() {
   const [sortConfig, setSortConfig] = useState({ key: "date", direction: "asc" });
 
  // 承認待ちイベント用 state
-  const [pendingEvents, setPendingEvents] = useState([
-  { 
-    id: 101,
-    title: "ヨガ教室",
-    date: "2025-11-01",
-    location: "公民館",
-    description: "初心者向けヨガクラスを提案します！",
-    url: "",
-    applicantName: "山田太郎",
-    applicantEmail: "taro@example.com",
-    applicantuserName: "taro.yamada"
-  }
-  ]);
+  const [pendingEvents, setPendingEvents] = useState([]);
 
   // 申請中イベント用 state
   const [isProposalOpen, setIsProposalOpen] = useState(false)
@@ -115,12 +103,20 @@ function App() {
       
       console.log("insert 結果:", { data, error });
 
-      if (error) console.error("追加エラー:", error);
-      else {
-        setEvents([...events, data[0]]);
-        setIsModalOpen(false);
+      if (error){
+       console.error("追加エラー:", error);
+       alert("イベントの追加に失敗しました。");
+       return;
       }
-    
+      
+      if (data && data.length > 0) {
+        setEvents([...events, data[0]]);
+      }
+      
+      setIsModalOpen(false);   // モーダルを閉じる
+      setMessage("追加しました！");
+      setTimeout(() => setMessage(""), 3000);  // 数秒後に自動で消す
+      
     } catch (err) {
       console.error("追加エラー:", err);
       alert("イベントの追加に失敗しました。コンソールを確認してください。");
@@ -241,16 +237,42 @@ function App() {
   };
 
   // 承認処理
-  const approveEvent = (id) => {
-    const eventToApprove = pendingEvents.find((e) => e.id === id);
-    if (!eventToApprove) return;
-    setPendingEvents(pendingEvents.filter((e) => e.id !== id));
-    setEvents([...events, { ...eventToApprove, status: "approved" }]);
+  const approveEvent = async (id) => {
+    try{
+      const { data, error } = await supabase
+        .from("Events")
+        .update({ flag: 1 })
+        .eq("id", id)
+        .select();
+
+      if (error) {
+        console.error("承認エラー:", error);
+        return;
+      }
+
+      // 更新結果が返ってこなければ処理中止
+      if (!data || data.length === 0) return;
+
+      // 承認待ちリストから削除
+      setPendingEvents(pendingEvents.filter((e) => e.id !== id));
+
+      // 通常イベント一覧に追加
+      setEvents([...events, data[0]]);
+    } catch (err) {
+      console.error("承認処理中の例外:", err);
+    }
   };
 
+
   // 却下処理
-  const rejectEvent = (id) => {
-    setPendingEvents(pendingEvents.filter((e) => e.id !== id));
+  const rejectEvent = async (id) => {
+    const { error } = await supabase
+      .from("Events")
+      .update({ flag: 3 })
+      .eq("id", id);
+
+    if (error) console.error("却下エラー:", error);
+    else setPendingEvents(pendingEvents.filter((e) => e.id !== id));
   };
 
   // ソート処理（承認待ち用）
@@ -267,19 +289,47 @@ function App() {
     return direction === "asc" ? comparison : -comparison;
   });
 
-  // 申請イベント表示処理
-  const proposeEvent = (newEvent) => {
-    setPendingEvents([
-      ...pendingEvents,
-      {
-        ...newEvent,
-        status: "pending",            // status を必ず pending にする
-        applicantuserName: username,  // ログインユーザ名を入れる
+  // 申請処理
+  const proposeEvent = async (newEvent) => {
+    try {
+      const { data, error } = await supabase.from("Events").insert([
+        {
+          title: newEvent.title,
+          date: newEvent.date,
+          location: newEvent.location,
+          description: newEvent.description || "",
+          url: newEvent.url || "",
+          applicantName: newEvent.applicantName,
+          applicantEmail: newEvent.applicantEmail,
+          applicantuserName: newEvent.applicantuserName,
+          flag: newEvent.flag,
+        },
+      ])
+      .select();
+      
+      console.log("insert 結果:", { data, error });
+
+      if (error) {
+        console.error("申請エラー:", error);
+        alert("イベントの追加に失敗しました。");
+        return;
+      } 
+      
+      if (data && data.length > 0) {
+        setPendingEvents([...pendingEvents, data[0]]);
       }
-    ]);
-    setMessage("申請しました！");
-    setTimeout(() => setMessage(""), 3000);  // 数秒後に自動で消す
+      
+      setIsProposalOpen(false);   // モーダルを閉じる
+      setMessage("申請しました！");
+      setTimeout(() => setMessage(""), 3000);  // 数秒後に自動で消す
+    
+    } catch (err) {
+      console.error("申請エラー:", err);
+      alert("イベントの申請に失敗しました。コンソールを確認してください。");
+    }
+    
   };
+
 
 
 
@@ -361,13 +411,16 @@ function App() {
           </Modal>
         )}
 
-{/*
-        // 承認待ちイベント一覧
+        {/* 追加完了後のメッセージ */}
+        {message && <div style={{ color: "green", marginTop: "10px" }}>{message}</div>}
+
+        {/* 承認待ちイベント一覧 */}
         <section>
           <PendingEventList
-            events={sortedPendingEvents}
-            onapprove={approveEvent}
-            onreject={rejectEvent}
+            pendingEvents={sortedPendingEvents}
+            setPendingEvents={setPendingEvents} 
+            onApprove={approveEvent}
+            onReject={rejectEvent}
             onSort={handleSort}
             sortConfig={sortConfig}
             onSelect={setSelectedEvent}
@@ -375,7 +428,6 @@ function App() {
             accountName={username}
           />
         </section>
-*/}
 
       </div>
     );
@@ -431,14 +483,13 @@ function App() {
           </Modal>
         )}
         
-
-        {/*
-        // 申請中イベント一覧
+        {/* 申請中イベント一覧 */}
         <section>
           <PendingEventList
-            events={sortedPendingEvents}
-            onapprove={approveEvent}
-            onreject={rejectEvent}
+            pendingEvents={sortedPendingEvents}
+            setPendingEvents={setPendingEvents} 
+            onApprove={approveEvent}
+            onReject={rejectEvent}
             onSort={handleSort}
             sortConfig={sortConfig}
             onSelect={setSelectedEvent}
@@ -447,7 +498,7 @@ function App() {
           />
         </section>
 
-        // 申請ボタン
+        {/* 申請ボタン */}
         <button
           onClick={() => setIsProposalOpen(true)}
           className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
@@ -455,7 +506,7 @@ function App() {
           ＋ イベント申請
         </button>
 
-        // 申請モーダル
+        {/* 申請モーダル */}
         {isProposalOpen && (
           <Modal onClose={() => setIsProposalOpen(false)}>
             <EventProposalForm
@@ -465,10 +516,8 @@ function App() {
           </Modal>
         )}
 
-        // 申請完了後のメッセージ
+        {/* 申請完了後のメッセージ */}
         {message && <div style={{ color: "green", marginTop: "10px" }}>{message}</div>}
-        
-         */}
 
       </div>
     );

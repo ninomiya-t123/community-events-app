@@ -37,7 +37,7 @@ function EventForm({ onAddEvent, onSaveEdit, editingEvent, onCancel }) {
       title,
       date,
       location,
-      description: description || "",
+      description,
       url: url || "",
       applicantName: "",
       applicantEmail: "",

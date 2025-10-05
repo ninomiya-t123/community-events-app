@@ -1,7 +1,6 @@
+// src/components/EventList.js
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
-import Modal from "./Modal";
-import EventForm from "./EventForm";
 
 function EventList
   ({ 
@@ -25,7 +24,7 @@ function EventList
     const { data, error } = await supabase
       .from("Events")
       .select("*")
-      .eq("flag", 1)
+      .eq("flag", 1)   // 1=イベント一覧表示
       .order("date", { ascending: true });
 
     if (error) {
@@ -55,6 +54,7 @@ function EventList
             <th onClick={() => onSort("location")} className="cursor-pointer border px-3 py-2 text-left">
               場所{getSortIndicator("location")}
             </th>
+            {/* 管理者のみ 固定幅の「操作」列表示 */}
             {userRole === "admin" && <th className="border px-3 py-2 w-[140px] text-center">操作</th>}
           </tr>
         </thead>
@@ -72,7 +72,7 @@ function EventList
               <td className="border px-3 py-2">{event.date}</td>
               <td className="border px-3 py-2">{event.location}</td>
 
-              {/* 管理者のみ「編集・削除」ボタン表示 */}
+              {/* 管理者のみ「編集・削除」ボタン表示(固定幅で中央寄せ) */}
               {userRole === "admin" && (
                 <td className="border px-3 py-2 w-[140px] text-center">
                   <div className="flex justify-center space-x-2">
