@@ -13,7 +13,8 @@ function Login({ onLogin, onGuest }) {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-yellow-100 to-yellow-300">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-6 text-gray-700">
-          地域コミュニティイベント管理アプリ ★☆dev★☆
+          <span className="block">地域コミュニティイベント</span>
+          <span className="block">管理アプリ</span>
         </h1>
         <h2 className="text-1.5xl font-bold mb-2.5 text-gray-700">
           ログイン

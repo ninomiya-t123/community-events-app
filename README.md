@@ -63,7 +63,7 @@
 ---
 
 ## ✅ 機能の詳細・動作確認方法
-1. https://community-events-app-git-develop-ninomiyas-projects-e8edb712.vercel.app/ にアクセス
+1. https://community-events-app.vercel.app/ にアクセス
 2. 以下を確認
 
 |No.|画面・機能名|管理者|一般ユーザー|アカウントなしユーザー|

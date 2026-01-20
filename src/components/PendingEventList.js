@@ -1,5 +1,4 @@
 // src/components/PendingEventList.js
-//import React, { useEffect, useState } from "react";
 import React, { useEffect } from "react";
 import { supabase } from "../supabaseClient";
 
@@ -51,26 +50,6 @@ function PendingEventList
     fetchEvents();
   }, [setPendingEvents, accountName, userRole]);
 
-
-/*
-    const { data, error } = await supabase
-      .from("Events")
-      .select("*")
-      .eq("flag", 2)   // 2=承認前イベント
-      
-      // 管理者でない場合のみ、自分の申請したイベントのみ取得
-      if (userRole !=== "admin") {
-        .eq("applicantuserName", accountName)
-      } 
-      .order("date", { ascending: true });
-
-    if (error) {
-      console.error("取得エラー:", error);
-    } else {
-      setPendingEvents(data);  // 親(App.js)に反映
-    }
-  };
-*/
 
   const getSortIndicator = (key) => {
     if (!sortConfig || sortConfig.key !== key) return "";
