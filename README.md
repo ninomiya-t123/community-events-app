@@ -65,26 +65,9 @@
 
 ---
 
-## 🚀 セットアップ手順
-
-```bash
-# リポジトリをクローン
-git clone https://github.com/ninomiya-t123/community-events-app.git
-cd community-events-app
-
-# パッケージをインストール
-npm install
-
-# 開発サーバーを起動
-npm start
-
-```
----
-
 ## ✅ 機能の詳細・動作確認方法
-1. 上記セットアップ手順を実施
-2. http://localhost:3000 にアクセス
-3. 以下を確認
+1. https://community-events-app.vercel.app/ にアクセス
+2. 以下を確認
 
 |No.|画面・機能名|管理者|一般ユーザー|アカウントなしユーザー|
 |---------|---------|---------|---------|---------|

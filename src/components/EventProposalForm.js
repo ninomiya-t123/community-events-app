@@ -8,20 +8,28 @@ function EventProposalForm({ onSubmit, onCancel }) {
   const [url, setUrl] = useState("");
   const [applicantName, setApplicantName] = useState("");
   const [applicantEmail, setApplicantEmail] = useState("");
+  const [applicantuserName, setApplicantuserName] = useState("");
+  const [flag, setFlag] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // 申請用フラグ
+    setFlag(2);
+
     const newProposal = {
-      id: Date.now(),
       title,
       date,
       location,
       description,
-      url,
-      applicantName,
-      applicantEmail,
+      url: url || "",
+      applicantName: applicantName || "",
+      applicantEmail: applicantEmail || "",
+      applicantuserName: applicantuserName || "",
+      flag: flag,
     };
-    onSubmit(newProposal);
+    
+    await onSubmit(newProposal);
     
     
     // 入力値リセット
@@ -32,6 +40,7 @@ function EventProposalForm({ onSubmit, onCancel }) {
     setUrl("");
     setApplicantName("");
     setApplicantEmail("");
+    setFlag("");
 
     // フォームを閉じる
     onCancel();
@@ -110,6 +119,17 @@ function EventProposalForm({ onSubmit, onCancel }) {
           placeholder="申請者メール"
           value={applicantEmail}
           onChange={(e) => setApplicantEmail(e.target.value)}
+          required
+          className="border border-gray-500 rounded p-2 w-full"
+        />
+      </div>
+
+      <div>
+        <input
+          type="text"
+          placeholder="申請者ユーザー名"
+          value={applicantuserName}
+          onChange={(e) => setApplicantuserName(e.target.value)}
           required
           className="border border-gray-500 rounded p-2 w-full"
         />
