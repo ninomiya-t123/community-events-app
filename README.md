@@ -94,10 +94,19 @@
 ---
 
 ## 📲 動作イメージ
-スクリーンショットを添付予定
-- **イベント一覧画面**
-- **イベント詳細画面**
-- **イベント追加フォーム**
+それぞれのスクリーンショットを添付しています。<br>
+※（No.X）は 機能の詳細・動作確認方法 内の表に記載してあるNo.となります。
+- **ログイン画面(No.1)**
+![ログイン画面](https://github.com/ninomiya-t123/community-events-app/blob/main/public/LoginScreen.png)
+- **管理者ログイン後の画面**
+![管理者ログイン後の画面](https://github.com/ninomiya-t123/community-events-app/blob/main/public/AdminScreen.png)
+- **イベント追加フォーム(No.8)**
+![イベント追加フォーム](https://github.com/ninomiya-t123/community-events-app/blob/main/public/EventAdd.png)
+- **イベント編集フォーム(No.10)**
+![イベント編集フォーム](https://github.com/ninomiya-t123/community-events-app/blob/main/public/EventEdit.png)
+- **イベント詳細画面(No.12)**
+![イベント詳細画面](https://github.com/ninomiya-t123/community-events-app/blob/main/public/EventDetail.png)
+
 
 ---
 
@@ -105,7 +114,6 @@
 
 - **ログイン機能のセキュリティ強化**
 - **アカウント作成機能**
-- **データベース接続によるイベント永続化**
 
 ---
 
