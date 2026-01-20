@@ -7,9 +7,9 @@ function EventForm({ onAddEvent, onSaveEdit, editingEvent, onCancel }) {
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [url, setUrl] = useState("");
-  const [applicantName, setApplicantName] = useState("");
-  const [applicantEmail, setApplicantEmail] = useState("");
-  const [flag, setFlag] = useState("");
+  //const [applicantName, setApplicantName] = useState("");
+  //const [applicantEmail, setApplicantEmail] = useState("");
+  //const [flag, setFlag] = useState("");
 
   // 編集時に既存データを反映
   useEffect(() => {

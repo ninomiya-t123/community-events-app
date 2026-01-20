@@ -14,6 +14,9 @@ function EventProposalForm({ onSubmit, onCancel }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // 申請用フラグ
+    setFlag(2);
+
     const newProposal = {
       title,
       date,
@@ -23,7 +26,7 @@ function EventProposalForm({ onSubmit, onCancel }) {
       applicantName: applicantName || "",
       applicantEmail: applicantEmail || "",
       applicantuserName: applicantuserName || "",
-      flag: 2,                // 申請用
+      flag: flag,
     };
     
     await onSubmit(newProposal);

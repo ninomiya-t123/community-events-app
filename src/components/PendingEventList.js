@@ -1,5 +1,6 @@
 // src/components/PendingEventList.js
-import React, { useEffect, useState } from "react";
+//import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { supabase } from "../supabaseClient";
 
 function PendingEventList
@@ -18,37 +19,38 @@ function PendingEventList
 
   // 初回ロード時にデータ取得
   useEffect(() => {
+    // Supabase からデータ取得
+    const fetchEvents = async () => {
+      try {
+        // ベースクエリ作成
+        let query = supabase
+          .from("Events")
+          .select("*")
+          .eq("flag", 2); // 2 = 承認前イベント
+
+        // 管理者でない場合のみ、自分の申請したイベントのみ取得
+        if (userRole !== "admin") {
+          query = query.eq("applicantuserName", accountName);
+        }
+
+        // 並び替え
+        query = query.order("date", { ascending: true });
+
+        const { data, error } = await query;
+
+        if (error) {
+          console.error("取得エラー:", error);
+        } else {
+          setPendingEvents(data);  // 親(App.js)に反映
+        }
+      } catch (err) {
+        console.error("fetchEvents 実行時の例外:", err);
+      }
+    };
+
     fetchEvents();
-  }, []);
+  }, [setPendingEvents, accountName, userRole]);
 
-  // Supabase からデータ取得
-  const fetchEvents = async () => {
-    try {
-      // ベースクエリ作成
-      let query = supabase
-        .from("Events")
-        .select("*")
-        .eq("flag", 2); // 2 = 承認前イベント
-
-      // 管理者でない場合のみ、自分の申請したイベントのみ取得
-      if (userRole !== "admin") {
-        query = query.eq("applicantuserName", accountName);
-      }
-
-      // 並び替え
-      query = query.order("date", { ascending: true });
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error("取得エラー:", error);
-      } else {
-        setPendingEvents(data);  // 親(App.js)に反映
-      }
-    } catch (err) {
-      console.error("fetchEvents 実行時の例外:", err);
-    }
-  };
 
 /*
     const { data, error } = await supabase

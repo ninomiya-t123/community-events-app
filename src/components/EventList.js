@@ -1,5 +1,6 @@
 // src/components/EventList.js
-import React, { useEffect, useState } from "react";
+//import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { supabase } from "../supabaseClient";
 
 function EventList
@@ -16,23 +17,23 @@ function EventList
 
   // 初回ロード時にデータ取得
   useEffect(() => {
+   // Supabase からデータ取得
+   const fetchEvents = async () => {
+     const { data, error } = await supabase
+       .from("Events")
+       .select("*")
+       .eq("flag", 1)   // 1=イベント一覧表示
+       .order("date", { ascending: true });
+
+     if (error) {
+       console.error("取得エラー:", error);
+     } else {
+       setEvents(data);  // 親(App.js)に反映
+     }
+   };
+
     fetchEvents();
-  }, []);
-
-  // Supabase からデータ取得
-  const fetchEvents = async () => {
-    const { data, error } = await supabase
-      .from("Events")
-      .select("*")
-      .eq("flag", 1)   // 1=イベント一覧表示
-      .order("date", { ascending: true });
-
-    if (error) {
-      console.error("取得エラー:", error);
-    } else {
-      setEvents(data);  // 親(App.js)に反映
-    }
-  };
+  }, [setEvents]);
 
   const getSortIndicator = (key) => {
     if (sortConfig.key !== key) return "";
